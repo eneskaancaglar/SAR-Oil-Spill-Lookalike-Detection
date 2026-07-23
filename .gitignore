@@ -37,3 +37,11 @@ checkpoints/*
 *.tmp
 .DS_Store
 Thumbs.db
+
+# Downloaded dataset archives
+data/downloads/
+*.zip
+
+# Generated dataset inspection reports
+outputs/dataset_summary.json
+outputs/split_leakage_report.json
