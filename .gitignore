@@ -1,0 +1,39 @@
+# Python virtual environment
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE files
+.vscode/
+.idea/
+
+# Dataset contents
+data/raw/images/*
+!data/raw/images/.gitkeep
+
+data/raw/masks/*
+!data/raw/masks/.gitkeep
+
+data/processed/*
+!data/processed/.gitkeep
+
+# Generated outputs
+outputs/figures/*
+!outputs/figures/.gitkeep
+
+checkpoints/*
+!checkpoints/.gitkeep
+
+# Model files
+*.pth
+*.pt
+*.ckpt
+
+# Temporary files
+*.tmp
+.DS_Store
+Thumbs.db
