@@ -45,3 +45,6 @@ data/downloads/
 # Generated dataset inspection reports
 outputs/dataset_summary.json
 outputs/split_leakage_report.json
+
+# One-batch test outputs
+outputs/one_batch_overfit_result.json
