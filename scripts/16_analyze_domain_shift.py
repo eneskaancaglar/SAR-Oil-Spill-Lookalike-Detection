@@ -3,7 +3,6 @@
 import json
 from collections import defaultdict
 from pathlib import Path
-from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,8 +50,8 @@ OUTPUT_DIR = (
 )
 
 
-def resolve_project_path(value: str) -> Path:
-    path = Path(value)
+def resolve_project_path(path_text: str) -> Path:
+    path = Path(path_text)
 
     if path.is_absolute():
         return path
@@ -60,151 +59,66 @@ def resolve_project_path(value: str) -> Path:
     return PROJECT_ROOT / path
 
 
-def percentile_from_histogram(
-    histogram: np.ndarray,
-    percentile: float,
-) -> float:
-    cumulative = np.cumsum(histogram)
-    target = percentile / 100.0 * cumulative[-1]
-
-    index = int(
-        np.searchsorted(
-            cumulative,
-            target,
-            side="left",
-        )
-    )
-
-    return index / 255.0
-
-
 def analyze_image(
     image_path: Path,
 ) -> tuple[dict[str, float | int], np.ndarray]:
+
     with Image.open(image_path) as image:
         image = image.convert("L")
         array = np.asarray(image, dtype=np.uint8)
+
+    normalized = array.astype(np.float32) / 255.0
 
     histogram = np.bincount(
         array.reshape(-1),
         minlength=256,
     ).astype(np.int64)
 
-    values = np.arange(256, dtype=np.float64)
-    pixel_count = int(histogram.sum())
-
-    mean_raw = float(
-        np.sum(histogram * values) / pixel_count
-    )
-
-    variance_raw = float(
-        np.sum(
-            histogram * (values - mean_raw) ** 2
-        )
-        / pixel_count
-    )
-
-    standard_deviation_raw = float(
-        np.sqrt(variance_raw)
-    )
-
-    metrics = {
+    statistics = {
         "width": int(array.shape[1]),
         "height": int(array.shape[0]),
-        "pixel_count": pixel_count,
-        "mean_intensity": mean_raw / 255.0,
-        "standard_deviation": (
-            standard_deviation_raw / 255.0
-        ),
-        "p05": percentile_from_histogram(
-            histogram,
-            5.0,
-        ),
-        "p50": percentile_from_histogram(
-            histogram,
-            50.0,
-        ),
-        "p95": percentile_from_histogram(
-            histogram,
-            95.0,
-        ),
+        "mean_intensity": float(normalized.mean()),
+        "standard_deviation": float(normalized.std()),
+        "p05": float(np.percentile(normalized, 5)),
+        "p50": float(np.percentile(normalized, 50)),
+        "p95": float(np.percentile(normalized, 95)),
         "dark_pixel_percentage": float(
-            histogram[:33].sum()
-            / pixel_count
-            * 100.0
+            (normalized < 0.13).mean() * 100.0
         ),
         "bright_pixel_percentage": float(
-            histogram[224:].sum()
-            / pixel_count
-            * 100.0
+            (normalized > 0.87).mean() * 100.0
         ),
     }
 
-    return metrics, histogram
-
-
-def global_histogram_summary(
-    histogram: np.ndarray,
-) -> dict[str, float | int]:
-    values = np.arange(256, dtype=np.float64)
-    pixel_count = int(histogram.sum())
-
-    mean_raw = float(
-        np.sum(histogram * values) / pixel_count
-    )
-
-    return {
-        "pixel_count": pixel_count,
-        "mean_intensity": mean_raw / 255.0,
-        "p05": percentile_from_histogram(
-            histogram,
-            5.0,
-        ),
-        "p50": percentile_from_histogram(
-            histogram,
-            50.0,
-        ),
-        "p95": percentile_from_histogram(
-            histogram,
-            95.0,
-        ),
-        "dark_pixel_percentage": float(
-            histogram[:33].sum()
-            / pixel_count
-            * 100.0
-        ),
-        "bright_pixel_percentage": float(
-            histogram[224:].sum()
-            / pixel_count
-            * 100.0
-        ),
-    }
+    return statistics, histogram
 
 
 def process_sos(
-    output_rows: list[dict[str, Any]],
-    group_histograms: dict[str, np.ndarray],
+    rows: list[dict],
+    histograms: dict[str, np.ndarray],
 ) -> None:
+
     dataframe = pd.read_csv(
         SOS_MANIFEST,
         encoding="utf-8-sig",
     )
 
-    split_values = (
+    split_text = (
         dataframe["split"]
         .astype(str)
         .str.lower()
+        .str.strip()
     )
 
     validation = dataframe[
-        split_values.isin(
-            {"val", "valid", "validation"}
+        split_text.isin(
+            ["val", "valid", "validation"]
         )
     ].copy()
 
     if validation.empty:
         raise RuntimeError(
-            "SOS manifestinde validation satiri bulunamadi."
+            "SOS manifestinde validation verisi bulunamadi."
         )
 
     print(
@@ -219,30 +133,30 @@ def process_sos(
             str(row.image_path)
         )
 
-        metrics, histogram = analyze_image(
+        if not image_path.exists():
+            raise FileNotFoundError(
+                f"SOS görüntüsü bulunamadi: {image_path}"
+            )
+
+        statistics, histogram = analyze_image(
             image_path
         )
 
         sensor = str(row.sensor)
-        sensor_group = f"SOS_{sensor}"
+        subgroup = f"SOS_{sensor}"
 
-        output_rows.append(
+        rows.append(
             {
                 "dataset_group": "SOS_validation",
-                "subgroup": sensor_group,
+                "subgroup": subgroup,
                 "image_name": str(row.sample_name),
                 "image_path": str(image_path),
-                **metrics,
+                **statistics,
             }
         )
 
-        group_histograms[
-            "SOS_validation"
-        ] += histogram
-
-        group_histograms[
-            sensor_group
-        ] += histogram
+        histograms["SOS_validation"] += histogram
+        histograms[subgroup] += histogram
 
         if index % 500 == 0:
             print(
@@ -251,9 +165,10 @@ def process_sos(
 
 
 def process_dartis(
-    output_rows: list[dict[str, Any]],
-    group_histograms: dict[str, np.ndarray],
+    rows: list[dict],
+    histograms: dict[str, np.ndarray],
 ) -> None:
+
     dataframe = pd.read_csv(
         DARTIS_MANIFEST,
         encoding="utf-8-sig",
@@ -267,36 +182,38 @@ def process_dartis(
         dataframe.itertuples(index=False),
         start=1,
     ):
+        image_set = str(row.image_set)
+        image_name = str(row.image_name)
+
         image_path = (
             DARTIS_RAW_DIR
-            / str(row.image_set)
-            / str(row.image_name)
+            / image_set
+            / image_name
         )
 
-        metrics, histogram = analyze_image(
+        if not image_path.exists():
+            raise FileNotFoundError(
+                f"DARTIS görüntüsü bulunamadi: {image_path}"
+            )
+
+        statistics, histogram = analyze_image(
             image_path
         )
 
-        image_set = str(row.image_set)
-        group_name = f"DARTIS_{image_set}"
+        subgroup = f"DARTIS_{image_set}"
 
-        output_rows.append(
+        rows.append(
             {
                 "dataset_group": "DARTIS_no_oil",
-                "subgroup": group_name,
-                "image_name": str(row.image_name),
+                "subgroup": subgroup,
+                "image_name": image_name,
                 "image_path": str(image_path),
-                **metrics,
+                **statistics,
             }
         )
 
-        group_histograms[
-            "DARTIS_no_oil"
-        ] += histogram
-
-        group_histograms[
-            group_name
-        ] += histogram
+        histograms["DARTIS_no_oil"] += histogram
+        histograms[subgroup] += histogram
 
         if index % 500 == 0:
             print(
@@ -304,38 +221,97 @@ def process_dartis(
             )
 
 
-def save_distribution_plot(
+def summarize_group(
+    rows: pd.DataFrame,
+    histogram: np.ndarray,
+) -> dict:
+
+    pixel_values = np.arange(256) / 255.0
+    pixel_count = int(histogram.sum())
+
+    if pixel_count == 0:
+        raise RuntimeError(
+            "Histogram bos olamaz."
+        )
+
+    global_mean = float(
+        np.sum(
+            pixel_values * histogram
+        )
+        / pixel_count
+    )
+
+    cumulative = np.cumsum(histogram)
+
+    def histogram_percentile(
+        percentile: float,
+    ) -> float:
+        target = (
+            percentile / 100.0
+            * cumulative[-1]
+        )
+
+        index = int(
+            np.searchsorted(
+                cumulative,
+                target,
+            )
+        )
+
+        return index / 255.0
+
+    return {
+        "image_count": int(len(rows)),
+        "mean_of_image_means": float(
+            rows["mean_intensity"].mean()
+        ),
+        "median_of_image_means": float(
+            rows["mean_intensity"].median()
+        ),
+        "mean_image_standard_deviation": float(
+            rows["standard_deviation"].mean()
+        ),
+        "mean_dark_pixel_percentage": float(
+            rows["dark_pixel_percentage"].mean()
+        ),
+        "global_mean_intensity": global_mean,
+        "global_p05": histogram_percentile(5),
+        "global_p50": histogram_percentile(50),
+        "global_p95": histogram_percentile(95),
+    }
+
+
+def save_mean_distribution_plot(
     dataframe: pd.DataFrame,
     output_path: Path,
 ) -> None:
+
     figure = plt.figure(figsize=(10, 6))
     axis = figure.add_subplot(1, 1, 1)
 
-    for group_name in (
-        "SOS_validation",
-        "DARTIS_nw",
-        "DARTIS_nc",
-    ):
-        if group_name == "SOS_validation":
-            values = dataframe.loc[
-                dataframe["dataset_group"]
-                == "SOS_validation",
-                "mean_intensity",
-            ]
-        else:
-            values = dataframe.loc[
-                dataframe["subgroup"]
-                == group_name,
-                "mean_intensity",
-            ]
+    groups = {
+        "SOS validation": dataframe[
+            dataframe["dataset_group"]
+            == "SOS_validation"
+        ],
+        "DARTIS water (nw)": dataframe[
+            dataframe["subgroup"]
+            == "DARTIS_nw"
+        ],
+        "DARTIS coast (nc)": dataframe[
+            dataframe["subgroup"]
+            == "DARTIS_nc"
+        ],
+    }
 
+    for label, group in groups.items():
         axis.hist(
-            values,
+            group["mean_intensity"],
             bins=40,
             density=True,
             histtype="step",
             linewidth=2,
-            label=group_name,
+            label=label,
         )
 
     axis.set_title(
@@ -354,21 +330,28 @@ def save_distribution_plot(
 
 
 def save_global_histogram_plot(
-    group_histograms: dict[str, np.ndarray],
+    histograms: dict[str, np.ndarray],
     output_path: Path,
 ) -> None:
+
     figure = plt.figure(figsize=(10, 6))
     axis = figure.add_subplot(1, 1, 1)
 
     x_values = np.arange(256) / 255.0
 
-    for group_name in (
-        "SOS_validation",
-        "DARTIS_nw",
-        "DARTIS_nc",
-    ):
-        histogram = group_histograms[group_name]
+    groups = {
+        "SOS validation": histograms[
+            "SOS_validation"
+        ],
+        "DARTIS water (nw)": histograms[
+            "DARTIS_nw"
+        ],
+        "DARTIS coast (nc)": histograms[
+            "DARTIS_nc"
+        ],
+    }
 
+    for label, histogram in groups.items():
         normalized = (
             histogram / histogram.sum()
         )
@@ -376,13 +359,15 @@ def save_global_histogram_plot(
         axis.plot(
             x_values,
             normalized,
-            label=group_name,
+            label=label,
         )
 
     axis.set_title(
         "Global piksel yoğunluğu dağılımı"
     )
-    axis.set_xlabel("Piksel yoğunluğu (0-1)")
+    axis.set_xlabel(
+        "Piksel yoğunluğu (0-1)"
+    )
     axis.set_ylabel("Piksel oranı")
     axis.grid(True, alpha=0.3)
     axis.legend()
@@ -394,17 +379,28 @@ def save_global_histogram_plot(
 
 def analyze_false_alarm_correlation(
     statistics: pd.DataFrame,
-    output_dir: Path,
-) -> dict[str, float | int]:
+    output_path: Path,
+) -> dict:
+
     if not DARTIS_RESULTS.exists():
         return {
-            "available": 0,
+            "available": False,
         }
 
     results = pd.read_csv(
         DARTIS_RESULTS,
         encoding="utf-8-sig",
     )
+
+    required_column = "t080_positive_ratio"
+
+    if required_column not in results.columns:
+        return {
+            "available": False,
+            "reason": (
+                f"{required_column} bulunamadi."
+            ),
+        }
 
     dartis_statistics = statistics[
         statistics["dataset_group"]
@@ -415,7 +411,7 @@ def analyze_false_alarm_correlation(
         results[
             [
                 "image_name",
-                "t080_positive_ratio",
+                required_column,
             ]
         ],
         on="image_name",
@@ -424,13 +420,19 @@ def analyze_false_alarm_correlation(
 
     mean_correlation = float(
         merged["mean_intensity"].corr(
-            merged["t080_positive_ratio"]
+            merged[required_column]
         )
     )
 
-    std_correlation = float(
+    contrast_correlation = float(
         merged["standard_deviation"].corr(
-            merged["t080_positive_ratio"]
+            merged[required_column]
+        )
+    )
+
+    dark_pixel_correlation = float(
+        merged["dark_pixel_percentage"].corr(
+            merged[required_column]
         )
     )
 
@@ -439,7 +441,7 @@ def analyze_false_alarm_correlation(
 
     axis.scatter(
         merged["mean_intensity"],
-        merged["t080_positive_ratio"] * 100.0,
+        merged[required_column] * 100.0,
         s=10,
         alpha=0.4,
     )
@@ -456,57 +458,55 @@ def analyze_false_alarm_correlation(
     axis.grid(True, alpha=0.3)
 
     figure.tight_layout()
-    figure.savefig(
-        output_dir
-        / "intensity_vs_false_alarm.png",
-        dpi=160,
-    )
+    figure.savefig(output_path, dpi=160)
     plt.close(figure)
 
     return {
-        "available": 1,
-        "matched_image_count": len(merged),
+        "available": True,
+        "matched_image_count": int(len(merged)),
         "mean_intensity_correlation": (
             mean_correlation
         ),
         "standard_deviation_correlation": (
-            std_correlation
+            contrast_correlation
+        ),
+        "dark_pixel_correlation": (
+            dark_pixel_correlation
         ),
     }
 
 
 def main() -> None:
+
     OUTPUT_DIR.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    group_histograms: dict[str, np.ndarray] = (
-        defaultdict(
-            lambda: np.zeros(
-                256,
-                dtype=np.int64,
-            )
+    rows: list[dict] = []
+
+    histograms = defaultdict(
+        lambda: np.zeros(
+            256,
+            dtype=np.int64,
         )
     )
-
-    output_rows: list[dict[str, Any]] = []
 
     print("=" * 75)
     print("SOS - DARTIS DOMAIN SHIFT ANALIZI")
     print("=" * 75)
 
     process_sos(
-        output_rows,
-        group_histograms,
+        rows,
+        histograms,
     )
 
     process_dartis(
-        output_rows,
-        group_histograms,
+        rows,
+        histograms,
     )
 
-    statistics = pd.DataFrame(output_rows)
+    statistics = pd.DataFrame(rows)
 
     statistics_path = (
         OUTPUT_DIR
@@ -519,57 +519,47 @@ def main() -> None:
         encoding="utf-8-sig",
     )
 
-    summary: dict[str, Any] = {
+    group_filters = {
+        "SOS_validation": (
+            statistics["dataset_group"]
+            == "SOS_validation"
+        ),
+        "DARTIS_no_oil": (
+            statistics["dataset_group"]
+            == "DARTIS_no_oil"
+        ),
+        "DARTIS_nw": (
+            statistics["subgroup"]
+            == "DARTIS_nw"
+        ),
+        "DARTIS_nc": (
+            statistics["subgroup"]
+            == "DARTIS_nc"
+        ),
+    }
+
+    summary = {
         "groups": {},
     }
 
-    for group_name in (
-        "SOS_validation",
-        "DARTIS_no_oil",
-        "DARTIS_nw",
-        "DARTIS_nc",
+    for group_name, group_filter in (
+        group_filters.items()
     ):
-        if group_name in {
-            "SOS_validation",
-            "DARTIS_no_oil",
-        }:
-            group_rows = statistics[
-                statistics["dataset_group"]
-                == group_name
-            ]
-        else:
-            group_rows = statistics[
-                statistics["subgroup"]
-                == group_name
-            ]
+        group_rows = statistics[group_filter]
 
-        summary["groups"][group_name] = {
-            "image_count": len(group_rows),
-            "mean_of_image_means": float(
-                group_rows[
-                    "mean_intensity"
-                ].mean()
-            ),
-            "median_of_image_means": float(
-                group_rows[
-                    "mean_intensity"
-                ].median()
-            ),
-            "mean_image_standard_deviation": float(
-                group_rows[
-                    "standard_deviation"
-                ].mean()
-            ),
-            "global_pixels": global_histogram_summary(
-                group_histograms[group_name]
-            ),
-        }
-
-    summary["false_alarm_correlation"] = (
-        analyze_false_alarm_correlation(
-            statistics,
-            OUTPUT_DIR,
+        summary["groups"][group_name] = (
+            summarize_group(
+                group_rows,
+                histograms[group_name],
+            )
         )
+
+    summary[
+        "false_alarm_correlation"
+    ] = analyze_false_alarm_correlation(
+        statistics,
+        OUTPUT_DIR
+        / "intensity_vs_false_alarm.png",
     )
 
     summary_path = (
@@ -587,76 +577,80 @@ def main() -> None:
             indent=2,
         )
 
-    save_distribution_plot(
+    save_mean_distribution_plot(
         statistics,
         OUTPUT_DIR
         / "image_mean_distribution.png",
     )
 
     save_global_histogram_plot(
-        group_histograms,
+        histograms,
         OUTPUT_DIR
         / "global_pixel_distribution.png",
     )
 
     print()
     print("=" * 75)
-    print("GRUP OZETLERI")
+    print("GRUP SONUCLARI")
     print("=" * 75)
 
-    for group_name, group_summary in (
+    for group_name, result in (
         summary["groups"].items()
     ):
-        global_summary = (
-            group_summary["global_pixels"]
-        )
-
         print()
         print(group_name)
         print(
-            "  Goruntu:",
-            group_summary["image_count"],
+            f"  Görüntü sayısı:       "
+            f"{result['image_count']}"
         )
         print(
-            "  Ortalama yogunluk:",
-            f"{global_summary['mean_intensity']:.4f}",
+            f"  Ortalama yoğunluk:    "
+            f"{result['global_mean_intensity']:.4f}"
         )
         print(
-            "  P05 / P50 / P95:",
-            f"{global_summary['p05']:.4f} / "
-            f"{global_summary['p50']:.4f} / "
-            f"{global_summary['p95']:.4f}",
+            f"  Ortalama kontrast:    "
+            f"{result['mean_image_standard_deviation']:.4f}"
         )
         print(
-            "  Koyu piksel orani:",
-            f"%{global_summary['dark_pixel_percentage']:.2f}",
+            f"  Koyu piksel ort.:     "
+            f"%{result['mean_dark_pixel_percentage']:.2f}"
+        )
+        print(
+            f"  Global P05/P50/P95:   "
+            f"{result['global_p05']:.4f} / "
+            f"{result['global_p50']:.4f} / "
+            f"{result['global_p95']:.4f}"
         )
 
     correlation = summary[
         "false_alarm_correlation"
     ]
 
-    if correlation.get("available") == 1:
+    if correlation.get("available"):
         print()
+        print("=" * 75)
+        print("YANLIS ALARM KORELASYONLARI")
+        print("=" * 75)
+
         print(
-            "Ortalama yogunluk - FP alan "
-            "korelasyonu:",
+            "Ortalama yoğunluk - FP alan: ",
             f"{correlation['mean_intensity_correlation']:.4f}",
         )
 
         print(
-            "Standart sapma - FP alan "
-            "korelasyonu:",
+            "Kontrast - FP alan:          ",
             f"{correlation['standard_deviation_correlation']:.4f}",
+        )
+
+        print(
+            "Koyu piksel - FP alan:       ",
+            f"{correlation['dark_pixel_correlation']:.4f}",
         )
 
     print()
     print("CSV: ", statistics_path.resolve())
     print("JSON:", summary_path.resolve())
-    print(
-        "Grafikler:",
-        OUTPUT_DIR.resolve(),
-    )
+    print("Grafikler:", OUTPUT_DIR.resolve())
 
 
 if __name__ == "__main__":
