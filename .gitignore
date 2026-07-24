@@ -48,3 +48,6 @@ outputs/split_leakage_report.json
 
 # One-batch test outputs
 outputs/one_batch_overfit_result.json
+
+# Generated experiment directories
+outputs/
