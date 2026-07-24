@@ -1,0 +1,43 @@
+﻿{
+    "model_name":  "Coastal Hard-Negative U-Net",
+    "checkpoint":  "checkpoints/final_model/oil_spill_unet_t060.pth",
+    "input":  "Single-channel grayscale SAR image",
+    "output":  "Oil-spill probability map",
+    "threshold":  0.6,
+    "architecture":  {
+                         "name":  "U-Net",
+                         "input_channels":  1,
+                         "output_channels":  1,
+                         "base_channels":  16,
+                         "parameters_approx":  1942289
+                     },
+    "sos_validation":  {
+                           "image_count":  1615,
+                           "dice":  0.8232,
+                           "iou":  0.6995,
+                           "precision":  0.7996,
+                           "recall":  0.8482
+                       },
+    "dartis_external_test":  {
+                                 "image_count":  493,
+                                 "any_alarm_percentage":  27.38,
+                                 "alarm_ge_1_percentage":  12.58,
+                                 "false_positive_pixel_percentage":  0.913,
+                                 "nc":  {
+                                            "image_count":  71,
+                                            "alarm_ge_1_percentage":  60.56,
+                                            "false_positive_pixel_percentage":  5.3753
+                                        },
+                                 "nw":  {
+                                            "image_count":  422,
+                                            "alarm_ge_1_percentage":  4.5,
+                                            "false_positive_pixel_percentage":  0.1623
+                                        }
+                             },
+    "limitations":  [
+                        "Coastal and land false alarms remain significant.",
+                        "The model does not include an explicit land-sea mask.",
+                        "Results should not be interpreted as operational oil-spill confirmation.",
+                        "The external test set must not be reused for further hyperparameter selection."
+                    ]
+}
