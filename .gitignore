@@ -51,3 +51,8 @@ outputs/one_batch_overfit_result.json
 
 # Generated experiment directories
 outputs/
+
+# External datasets and third-party utilities
+data/external/dartis/raw/
+data/external/dartis/processed/
+external/
