@@ -1,0 +1,49 @@
+{
+  "seed": 42,
+  "requested_ratios": {
+    "hard_negative_train": 0.6,
+    "hard_negative_val": 0.2,
+    "external_test": 0.2
+  },
+  "total_image_count": 2290,
+  "total_scene_count": 869,
+  "mean_images_per_scene": 2.6352128883774455,
+  "mixed_nc_nw_scene_count": 149,
+  "scene_source_counts": {
+    "ID_3": 2290
+  },
+  "splits": {
+    "hard_negative_train": {
+      "image_count": 1304,
+      "image_percentage": 56.943231441048034,
+      "scene_count": 623,
+      "scene_percentage": 71.6915995397008,
+      "nc_image_count": 209,
+      "nw_image_count": 1095
+    },
+    "hard_negative_val": {
+      "image_count": 493,
+      "image_percentage": 21.528384279475983,
+      "scene_count": 122,
+      "scene_percentage": 14.039125431530493,
+      "nc_image_count": 71,
+      "nw_image_count": 422
+    },
+    "external_test": {
+      "image_count": 493,
+      "image_percentage": 21.528384279475983,
+      "scene_count": 124,
+      "scene_percentage": 14.2692750287687,
+      "nc_image_count": 71,
+      "nw_image_count": 422
+    }
+  },
+  "leakage_check": {
+    "pairwise_scene_overlaps": {
+      "hard_negative_train__hard_negative_val": 0,
+      "hard_negative_train__external_test": 0,
+      "hard_negative_val__external_test": 0
+    },
+    "total_scene_overlap_count": 0
+  }
+}
