@@ -56,3 +56,8 @@ outputs/
 data/external/dartis/raw/
 data/external/dartis/processed/
 external/
+data/metadata/dartis_negative_verifier_crops.csv
+data/metadata/dartis_positive_oil_manifest.csv
+data/metadata/dartis_positive_verifier_crops.csv
+data/metadata/v03_binary_data_inventory.csv
+data/metadata/v03_verifier_dataset.csv
