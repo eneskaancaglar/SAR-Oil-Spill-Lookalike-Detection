@@ -61,3 +61,7 @@ data/metadata/dartis_positive_oil_manifest.csv
 data/metadata/dartis_positive_verifier_crops.csv
 data/metadata/v03_binary_data_inventory.csv
 data/metadata/v03_verifier_dataset.csv
+.vs/
+app_v03_backup.py
+data/metadata/v04_input_gate_dataset.csv
+data/metadata/v05_*.csv
