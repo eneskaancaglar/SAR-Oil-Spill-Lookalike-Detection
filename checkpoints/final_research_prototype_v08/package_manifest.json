@@ -1,0 +1,196 @@
+{
+  "package_name": "final_research_prototype_v08",
+  "version": "v0.8-research-prototype",
+  "created_at_utc": "2026-07-29T13:02:04.510540+00:00",
+  "status": "COMPLETED_RESEARCH_PROTOTYPE",
+  "operational_readiness": false,
+  "usage_policy": "Expert-review-only oil candidate generation.",
+  "artifacts": {
+    "oil_segmenter_and_v03_verifier": {
+      "exists": true,
+      "path": "checkpoints/final_model_v03",
+      "file_count": 6,
+      "files": [
+        {
+          "path": "checkpoints/final_model_v03/calibration_config.json",
+          "size_bytes": 573,
+          "sha256": "323ca85204d753334f40c5de6d5a3cf52b2d2ae6ad73ccaad51fb3f395c47160"
+        },
+        {
+          "path": "checkpoints/final_model_v03/detector_config.json",
+          "size_bytes": 1484,
+          "sha256": "d59ff6c1cf3690a6660ce70848fed6bce8f9bd4fcf601eba6896d1adac0b934d"
+        },
+        {
+          "path": "checkpoints/final_model_v03/model_card.json",
+          "size_bytes": 6319,
+          "sha256": "40dbfc263acf840c7ddbe950a57e928fefb00dc6a459d948d1214559c90ad016"
+        },
+        {
+          "path": "checkpoints/final_model_v03/oil_candidate_verifier_resnet18.pth",
+          "size_bytes": 134181783,
+          "sha256": "3eda133f2247e4bc8a0260c3d81d6d5a1b8d64d74d470211059064daf31ceb11"
+        },
+        {
+          "path": "checkpoints/final_model_v03/oil_segmentation_unet.pth",
+          "size_bytes": 23415571,
+          "sha256": "d4d26cf4b8eec484c71e8f86c39ee9a55b8c72c65f1f831d919e12e55b1f553b"
+        },
+        {
+          "path": "checkpoints/final_model_v03/package_manifest.json",
+          "size_bytes": 1477,
+          "sha256": "71c29af3d9a6c08ab0da1521915f2a52efb5ab017662420ea3fbb06b093bd292"
+        }
+      ]
+    },
+    "water_gate_v06": {
+      "exists": true,
+      "path": "checkpoints/final_water_gate_v06",
+      "file_count": 16,
+      "files": [
+        {
+          "path": "checkpoints/final_water_gate_v06/__pycache__/model_definition.cpython-314.pyc",
+          "size_bytes": 37201,
+          "sha256": "9ef9ff904fe4772364b1644f4e85ca9fda1b68aaa375c573641768ea6880cf3c"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/__pycache__/water_gate_runtime.cpython-314.pyc",
+          "size_bytes": 14361,
+          "sha256": "e89471dcafe7515cfb86be693000009875ede0dcbb2764f58ff696cd422ce1d2"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/fold_01_best.pth",
+          "size_bytes": 1945805,
+          "sha256": "bfcea53ac795db8af1c7fb987947e12c08a7d632254405654c13986b76167fad"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/fold_02_best.pth",
+          "size_bytes": 1945805,
+          "sha256": "916c91feadffa7424e89932b50a6a5fea2083de16ded9666f0a5d14fe952cd41"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/fold_03_best.pth",
+          "size_bytes": 1945805,
+          "sha256": "e77b4801b59e3845baa8519b5305278baf7fd2bb71497d5289614c9194cd0c70"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/fold_04_best.pth",
+          "size_bytes": 1945805,
+          "sha256": "6bcdfebb8273b5153cb417ddcd7eff834eaa737cb788b6f66132f39626df0a1f"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/fold_05_best.pth",
+          "size_bytes": 1945805,
+          "sha256": "daceded9a88d6d02d1ba0753b4c0fe224d98cb28d46abaaa57a072dcc589ada4"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/model_definition.py",
+          "size_bytes": 33743,
+          "sha256": "117add5405c4b8c5568c42ed9d52772d5d2d40b530418eb2f621578aaf079613"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/package_manifest.json",
+          "size_bytes": 2657,
+          "sha256": "530c9094a6291d5867acd4ed487f8735b22534caf33d32e5b2364f87a6ae406d"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/policy.json",
+          "size_bytes": 584,
+          "sha256": "7ff5e2648bcad995a48c0f9dcbce0c0506ac5686f89a19a43e03c476bc15104e"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/validation_reports/development_policy_summary.json",
+          "size_bytes": 1659,
+          "sha256": "9b56db18be1a4349540c87dc5c25dace9e1b131366b683cfe8787a0744b96a53"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/validation_reports/locked_test_consumed.json",
+          "size_bytes": 227,
+          "sha256": "f26ae65566574f037af79af733dd07a242f23691bddb5a625c8352b54defc9f5"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/validation_reports/locked_test_contact_sheet.jpg",
+          "size_bytes": 1312240,
+          "sha256": "0eb6edad1211d228568b3ddde0492cd73c26f989e82f7fa04325337f0cf83e7c"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/validation_reports/locked_test_per_scene.csv",
+          "size_bytes": 1405,
+          "sha256": "b9f173d40d8b1bddeb004da8046ea18e92bbf8399366614ac069f3f78cfe0634"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/validation_reports/locked_test_summary.json",
+          "size_bytes": 1789,
+          "sha256": "3999e428da0dffd9fb301ddd0bc4dddb941ae2860751f1711f677c794253d309"
+        },
+        {
+          "path": "checkpoints/final_water_gate_v06/water_gate_runtime.py",
+          "size_bytes": 9272,
+          "sha256": "b6bd403926e4fce0ede954947e0455ebf2ff143ce44c0111a5f060c4a9acc9e1"
+        }
+      ]
+    },
+    "lookalike_verifier_v08": {
+      "exists": true,
+      "path": "checkpoints/verifier_v08/best.pth",
+      "size_bytes": 44760395,
+      "sha256": "fa20a2f247ab585aa7466c3c845768f3b6e13c6e8da3dffb2d46bc8a8c1d9f6b"
+    },
+    "v08_operational_gate_config": {
+      "exists": true,
+      "path": "checkpoints/verifier_v08/operational_gate_config.json",
+      "size_bytes": 2098,
+      "sha256": "5621ce7c917ff758cad4f2e71603499142c5a2c83f10141fca14dd6d3609bd71"
+    },
+    "streamlit_app": {
+      "exists": true,
+      "path": "app.py",
+      "size_bytes": 35045,
+      "sha256": "b943c5189b876090008dc1cb902075fa543c257f2b578ed5ab142f55f3582d77"
+    }
+  },
+  "evaluation_sources": {
+    "v08_fresh_negative_holdout": {
+      "exists": true,
+      "path": "outputs/v08_fresh_negative_holdout/summary.json",
+      "sha256": "0eefb565e850ea296202bdeee947e0e9b79d949aa954c07cde47adb2781997d2"
+    },
+    "v08_operational_gate": {
+      "exists": true,
+      "path": "outputs/verifier_v08_operational_gate/summary.json",
+      "sha256": "d167fa4dd10f8cb3e13a3accb20569f25eb454d28abdf486a5563cede8e8616c"
+    },
+    "v08_training": {
+      "exists": true,
+      "path": "outputs/verifier_v08/summary.json",
+      "sha256": "9aa96e84bcb8d71cdfea31da94fac99f3c80475589c647e5f8885f22fb5ff801"
+    },
+    "v07_known_scene_regression": {
+      "exists": true,
+      "path": "outputs/v07_known_scene_regression/summary.json",
+      "sha256": "93b1522a54c33ca0ee03e862beb89c56ef69a65717d1111acd546e96db257b97"
+    },
+    "v06_water_locked_test": {
+      "exists": true,
+      "path": "outputs/v06_dartis_selective_water_locked_test/summary.json",
+      "sha256": "3999e428da0dffd9fb301ddd0bc4dddb941ae2860751f1711f677c794253d309"
+    },
+    "v07_fresh_negative_holdout": {
+      "exists": true,
+      "path": "outputs/v07_fresh_negative_holdout/summary.json",
+      "sha256": "a39e5c559a6361c1fbb0573ab8f1a499e297b310f778e6c6de17dac2af7a8204"
+    },
+    "v09_positive_mask_audit": {
+      "exists": true,
+      "path": "outputs/v09_positive_mask_source_audit/summary.json",
+      "sha256": "b84b6789a1ec42f19b0e2c5e0a937ffe0fc0507011f7475365b1934a9640c9dc"
+    }
+  },
+  "final_documents": {
+    "status": "outputs/final_research_prototype_v08/FINAL_STATUS.json",
+    "metrics": "outputs/final_research_prototype_v08/final_metrics.json",
+    "report": "outputs/final_research_prototype_v08/FINAL_REPORT.md",
+    "limitations": "outputs/final_research_prototype_v08/LIMITATIONS.md",
+    "handoff": "outputs/final_research_prototype_v08/HANDOFF_CHECKLIST.md"
+  }
+}
