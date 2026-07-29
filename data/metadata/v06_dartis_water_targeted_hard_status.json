@@ -1,0 +1,85 @@
+{
+  "items": {
+    "nc:nc-0228-02-000068": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\nc__nc-0228-02-000068.png"
+    },
+    "nc:nc-0027-00-000027": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\nc__nc-0027-00-000027.png"
+    },
+    "nc:nc-0038-00-000038": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\nc__nc-0038-00-000038.png"
+    },
+    "nc:nc-0168-02-000008": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\nc__nc-0168-02-000008.png"
+    },
+    "nc:nc-0140-01-000064": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\nc__nc-0140-01-000064.png"
+    },
+    "nc:nc-0071-00-000071": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\nc__nc-0071-00-000071.png"
+    },
+    "nc:nc-0178-02-000018": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\nc__nc-0178-02-000018.png"
+    },
+    "nc:nc-0251-03-000016": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\nc__nc-0251-03-000016.png"
+    },
+    "oc:oc-0286": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\oc__oc-0286.png"
+    },
+    "oc:oc-0027": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\oc__oc-0027.png"
+    },
+    "oc:oc-0238": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\oc__oc-0238.png"
+    },
+    "oc:oc-0350": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\oc__oc-0350.png"
+    },
+    "oc:oc-0112": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\oc__oc-0112.png"
+    },
+    "oc:oc-0075": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\oc__oc-0075.png"
+    },
+    "oc:oc-0354": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\oc__oc-0354.png"
+    },
+    "oc:oc-0005": {
+      "saved": true,
+      "completed": true,
+      "mask_path": "C:\\Users\\ENKA\\Desktop\\SDT-SAR görüntü işleme\\SAR-Oil-Spill-Segmentation\\data\\annotation\\v06_dartis_water_targeted_hard_batch\\manual_masks\\oc__oc-0005.png"
+    }
+  },
+  "last_index": 15
+}

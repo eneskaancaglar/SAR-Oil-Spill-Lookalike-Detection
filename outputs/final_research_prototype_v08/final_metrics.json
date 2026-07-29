@@ -1,0 +1,71 @@
+{
+  "frozen_version": "v0.8-research-prototype",
+  "completion_status": "COMPLETED_RESEARCH_PROTOTYPE",
+  "operational_readiness": false,
+  "automatic_operational_oil_decision_allowed": false,
+  "recommended_output_semantics": "OIL_CANDIDATE_REQUIRES_EXPERT_REVIEW",
+  "input_gate_v05": {
+    "locked_negative_count": 1582,
+    "false_accept_count": 0,
+    "safe_block_rate": 1.0,
+    "source_note": "Previously completed v0.5 locked negative evaluation."
+  },
+  "water_gate_v06": {
+    "final_gate_passed": true,
+    "locked_test_count": 8,
+    "accepted_scenes": 5,
+    "water_precision": 1.0,
+    "mean_accepted_recall": 0.9054,
+    "land_leakage": 0.0003
+  },
+  "lookalike_verifier_v08_calibration": {
+    "operational_gate_passed": true,
+    "confirmed_oil_precision": 1.0,
+    "confirmed_oil_recall": 0.8087649402390438,
+    "confirmed_negative_count": 0,
+    "negative_safe_block_rate": 1.0,
+    "positive_lookalike_rate": 0.00796812749003984,
+    "source_training_gate_passed": false,
+    "source_training_failed_checks": [
+      "lookalike_precision",
+      "lookalike_recall"
+    ]
+  },
+  "independent_negative_holdout_v08": {
+    "gate_passed": false,
+    "scene_count": 40,
+    "group_counts": {
+      "nc": 20,
+      "nw": 20
+    },
+    "water_accepted_scene_count": 32,
+    "false_alarm_scene_count": 2,
+    "false_alarm_rate_overall": 0.05,
+    "false_alarm_rate_among_water_accepted": 0.0625,
+    "confirmed_candidate_count": 3,
+    "final_oil_pixels": 2646,
+    "failed_checks": [
+      "maximum_confirmed_oil_false_alarm_scenes",
+      "maximum_total_final_oil_pixels"
+    ]
+  },
+  "comparison_with_v07": {
+    "v07_false_alarm_scene_count": 6,
+    "v07_final_oil_pixels": 27750,
+    "v08_false_alarm_scene_count": 2,
+    "v08_final_oil_pixels": 2646
+  },
+  "independent_positive_evidence": {
+    "fresh_positive_holdout_available": false,
+    "independent_positive_recall_claim_allowed": false
+  },
+  "v09_research_branch_status": {
+    "continued": false,
+    "reason_stopped": "Positive source-mask coverage was insufficient for a scientifically reliable dual-view retraining dataset.",
+    "positive_source_scene_count": 1365,
+    "valid_source_mask_pair_count": 756,
+    "pair_coverage": 0.5538461538461539,
+    "oc_coverage": 1.0,
+    "ow_coverage": 0.38484848484848483
+  }
+}

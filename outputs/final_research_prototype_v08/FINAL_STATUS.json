@@ -1,0 +1,21 @@
+{
+  "project_stage": "FINAL_RESEARCH_HANDOFF",
+  "frozen_version": "v0.8-research-prototype",
+  "status": "COMPLETED_RESEARCH_PROTOTYPE",
+  "frozen_at_utc": "2026-07-29T13:02:04.506631+00:00",
+  "more_training_required_for_current_handoff": false,
+  "operational_deployment_approved": false,
+  "automatic_oil_mask_as_final_decision": false,
+  "allowed_interpretation": "The system may generate research candidates for expert review.",
+  "blocking_evidence": {
+    "v08_independent_negative_holdout_gate": false,
+    "v08_false_alarm_scenes": 2,
+    "v08_holdout_scenes": 40,
+    "fresh_positive_holdout_missing": true
+  },
+  "final_metrics": "outputs/final_research_prototype_v08/final_metrics.json",
+  "final_report": "outputs/final_research_prototype_v08/FINAL_REPORT.md",
+  "limitations": "outputs/final_research_prototype_v08/LIMITATIONS.md",
+  "handoff_checklist": "outputs/final_research_prototype_v08/HANDOFF_CHECKLIST.md",
+  "package_manifest": "checkpoints/final_research_prototype_v08/package_manifest.json"
+}

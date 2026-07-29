@@ -1,0 +1,12 @@
+{
+  "stage": "v07_fresh_negative_holdout_consumed",
+  "consumed_at_utc": "2026-07-29T11:17:31.426127+00:00",
+  "gate_passed": false,
+  "holdout_count": 40,
+  "confirmed_oil_false_alarm_scene_count": 6,
+  "total_final_oil_pixels": 27750,
+  "holdout_manifest_sha256": "d114d5059cbbd6c19fd4729f431b2d085079bc9eeb1eb5eff62f0fe5a98dc06c",
+  "verifier_checkpoint_sha256": "de9c182dd80761385cbd89db8a393ba4f924e3013a7f26ac26048400d51f69aa",
+  "verifier_config_sha256": "9ac92f825f1b587bb0d45deab65de89df07cb98c304ffced51af1049672ad383",
+  "summary": "outputs/v07_fresh_negative_holdout/summary.json"
+}
