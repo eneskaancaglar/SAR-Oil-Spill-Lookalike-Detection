@@ -56,3 +56,18 @@ Manual exploratory checks on known positive DARTIS scenes revealed false negativ
 - an empty candidate mask does not prove that oil is absent,
 - the system must not be used for autonomous operational decisions,
 - the frozen v0.8 pipeline is the final internship handoff version.
+
+## Final Sensitive Screening Application
+
+Run the final application locally with:
+
+```powershell
+& ".\.venv\Scripts\python.exe" -m streamlit run ".\app_final.py"
+```
+
+The application provides two separate outputs:
+
+1. Sensitive screening mask: highlights suspicious regions to reduce missed detections. It may contain false positives.
+2. Confirmed candidate mask: contains only candidates accepted by the verifier.
+
+A sensitive screening result is not proof of an oil spill. An empty or weak mask does not prove that oil is absent. Expert interpretation is mandatory.

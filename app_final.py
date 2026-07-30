@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import hashlib
 import io
@@ -843,7 +843,7 @@ def render_water_gate(
         st.markdown(
             '<div class="accept-box">'
             '✅ Kara-su modeli güvenli su alanını kabul etti. '
-            'Recall-first modunda kesin kara dışındaki güvenli ve '
+            'Hassas tarama modunda kesin kara dışındaki güvenli ve '
             'belirsiz alanlar taranıyor.'
             '</div>',
             unsafe_allow_html=True,
@@ -853,7 +853,7 @@ def render_water_gate(
             '<div class="uncertain-box">'
             '⚠️ Kara-su ayrımı belirsiz. Petrol analizi '
             'durdurulmadı; kesin kara dışındaki alanlar '
-            'recall-first modunda taranıyor.'
+            'hassas tarama modunda taranıyor.'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -915,7 +915,7 @@ def render_water_gate(
             mask_to_image(
                 analysis_mask
             ),
-            caption="Recall-first analiz maskesi",
+            caption="Hassas tarama analiz maskesi",
             use_container_width=True,
         )
 
@@ -994,7 +994,7 @@ def render_oil_result(
     tabs = st.tabs(
         [
             "Nihai araştırma sonucu",
-            "Tarama maskesi — önce buraya bak",
+            "Hassas tarama maskesi",
             "Aday kararları",
             "Dosyaları indir",
         ]
@@ -1357,13 +1357,12 @@ with info:
     st.write(
         "**Akış:**",
         (
-            "Giriş kapısı → kesin karayı dışla → 0.35 eşikle "
-            "petrol tara → v0.8 aday doğrulama"
+            "Girdi doğrulama → kesin karayı dışla → seçilen eşikle petrol tara → aday doğrulama"
         ),
     )
 
     analyse_button = st.button(
-        "Recall-first analizi başlat",
+        "Hassas taramayı başlat",
         type="primary",
         use_container_width=True,
     )
@@ -1445,7 +1444,7 @@ if analyse_button:
             ] = analysis_water_mask
 
             with st.spinner(
-                "Recall-first mod: kesin kara dışındaki alanlar "
+                "Hassas tarama modu: kesin kara dışındaki alanlar "
                 f"{segmentation_threshold:.2f} eşikle taranıyor..."
             ):
                 oil_pipeline = (
@@ -1582,7 +1581,7 @@ if not water_result[
     st.markdown(
         """
         <div class="scientific-note">
-        <b>Recall-first modu:</b> Su kapısı belirsiz olsa da
+        <b>Hassas tarama modu:</b> Su kapısı belirsiz olsa da
         petrol analizi çalıştırıldı. Kesin kara dışındaki güvenli
         ve belirsiz alanlar tarandı. Bu yaklaşım kaçırmayı azaltmayı
         hedefler fakat yanlış alarmı artırabilir.
@@ -1632,4 +1631,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+
 
