@@ -1,36 +1,47 @@
-# SAR Oil Spill Segmentation
+# v0.6 Manuel Kara Maskesi Düzeltmeleri
 
-Sentinel-1 SAR g�r�nt�lerinden deniz y�zeyindeki petrol s�z�nt�lar�n�n
-tespiti ve piksel seviyesinde segmentasyonu �zerine geli�tirilen
-ba��ms�z g�r�nt� i�leme ve derin ��renme projesidir.
+Bu paket, sohbette gönderilen yedi problemli DARTIS `nc` görüntüsü için
+hazırlanmış hizalı kara ve güvenli-su maskelerini içerir.
 
-## Project Goal
+## Panel anlamı
 
-Input:
-- SAR image
+`outputs/v06_manual_land_corrections/review` klasöründeki görüntüler:
 
-Output:
-- Oil spill segmentation mask
+1. Orijinal SAR
+2. Kırmızı: kara, sarı: kıyı sınırı
+3. Yalnız analiz edilecek güvenli su
 
-## Project Stages
+## Kurulum
 
-- [x] Project environment created
-- [x] Initial dependencies installed
-- [ ] Dataset selected and downloaded
-- [ ] Image-mask pairs inspected
-- [ ] Dataset pipeline implemented
-- [ ] Baseline U-Net trained
-- [ ] Segmentation metrics calculated
-- [ ] Lookalike errors analyzed
+ZIP içeriğini proje köküne açın:
 
-## Project Structure
+```powershell
+Expand-Archive `
+  -LiteralPath "$env:USERPROFILE\Downloads\v06_manual_land_corrections.zip" `
+  -DestinationPath "." `
+  -Force
+```
 
-- data/raw/images: Original SAR images
-- data/raw/masks: Ground-truth segmentation masks
-- data/processed: Prepared patches and processed data
-- src: Reusable source code
-- scripts: Executable project scripts
-- checkpoints: Trained model files
-- outputs/figures: Generated figures
-- reports: Technical reports
-- configs: Experiment configurations
+Ardından:
+
+```powershell
+python -m py_compile `
+  .\scripts\59_apply_manual_land_corrections.py
+
+python `
+  .\scripts\59_apply_manual_land_corrections.py
+```
+
+Final manifest:
+
+```text
+data/metadata/v06_dartis_water_masks_final.csv
+```
+
+Bu manifestte:
+
+- `ow` ve `nw` açık-su örnekleri eğitim için uygundur.
+- Bu paketteki yedi kıyı örneği manuel düzeltme olarak uygundur.
+- Elle doğrulanmamış diğer kıyı örnekleri otomatik olarak eğitim dışı kalır.
+
+Bu yedi maske petrol/look-alike etiketi değildir; yalnız kara-su ayrımıdır.
