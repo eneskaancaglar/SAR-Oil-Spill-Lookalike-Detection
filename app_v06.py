@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import hashlib
 import io
@@ -64,8 +64,29 @@ WATER_GATE_LOCKED_SUMMARY = (
 )
 
 
+V08_PIPELINE_SCRIPT = (
+    ROOT
+    / "scripts"
+    / "92_test_v07_known_problem_scenes.py"
+)
+
+V08_VERIFIER_CHECKPOINT = (
+    ROOT
+    / "checkpoints"
+    / "verifier_v08"
+    / "best.pth"
+)
+
+V08_OPERATIONAL_CONFIG = (
+    ROOT
+    / "checkpoints"
+    / "verifier_v08"
+    / "operational_gate_config.json"
+)
+
+
 st.set_page_config(
-    page_title="SAR Petrol Tespit Sistemi v0.6",
+    page_title="SAR Petrol Adayı Analiz Sistemi v0.8",
     page_icon="🛰️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -496,13 +517,45 @@ def load_water_gate_cached() -> dict[str, Any]:
 @st.cache_resource(
     show_spinner=False
 )
-def load_oil_pipeline_cached() -> dict[str, Any]:
-    module = load_safe_module()
-    return module[
-        "load_oil_pipeline"
-    ](
-        "auto"
+def load_v08_module() -> dict[str, Any]:
+    require_file(V08_PIPELINE_SCRIPT)
+    return runpy.run_path(
+        str(V08_PIPELINE_SCRIPT),
+        run_name="streamlit_v08_verifier_pipeline",
     )
+
+
+@st.cache_resource(
+    show_spinner=False
+)
+def load_oil_pipeline_cached() -> dict[str, Any]:
+    require_file(V08_VERIFIER_CHECKPOINT)
+    require_file(V08_OPERATIONAL_CONFIG)
+
+    safe_module = load_safe_module()
+    pipeline = safe_module["load_oil_pipeline"]("auto")
+
+    checkpoint = torch.load(
+        V08_VERIFIER_CHECKPOINT,
+        map_location="cpu",
+        weights_only=False,
+    )
+    config = load_json(V08_OPERATIONAL_CONFIG)
+
+    if not config.get("operational_gate_passed", False):
+        raise RuntimeError("v0.8 operational gate PASS değil.")
+
+    pipeline["verifier_model"].load_state_dict(
+        checkpoint["model_state_dict"],
+        strict=True,
+    )
+    pipeline["verifier_model"].to(pipeline["device"])
+    pipeline["verifier_model"].eval()
+
+    return {
+        **pipeline,
+        "v07_config": config,
+    }
 
 
 def render_input_gate(
@@ -647,57 +700,49 @@ def render_water_gate(
 def render_oil_result(
     result: dict[str, Any],
 ) -> None:
-    if result[
-        "oil_detected"
-    ]:
+    if result["oil_detected"]:
         st.markdown(
             '<div class="reject-box">'
-            '🔴 PETROL ADAYI TESPİT EDİLDİ'
+            '🔴 PETROL ADAYI — UZMAN İNCELEMESİ GEREKLİ'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+    elif result["uncertain_candidate_count"] > 0:
+        st.markdown(
+            '<div class="uncertain-box">'
+            '⚠️ BELİRSİZ ADAY VAR — ADAY MASKESİNE EKLENMEDİ'
             '</div>',
             unsafe_allow_html=True,
         )
     else:
         st.markdown(
             '<div class="accept-box">'
-            '🟢 PETROL TESPİT EDİLMEDİ'
+            '🟢 YÜKSEK GÜVENLİ PETROL ADAYI BULUNMADI<br><small>Bu sonuç görüntüde petrol bulunmadığını kanıtlamaz.</small>'
             '</div>',
             unsafe_allow_html=True,
         )
 
     columns = st.columns(4)
-
     columns[0].metric(
-        "Su içindeki petrol kaplaması",
-        (
-            f"%{result['final_oil_percent_of_water']:.4f}"
-        ),
+        "Aday maskesinin sudaki oranı",
+        f"%{result['final_oil_percent_of_water']:.4f}",
     )
-
     columns[1].metric(
-        "Nihai petrol pikseli",
-        result[
-            "final_positive_pixels"
-        ],
+        "Onaylı aday pikseli",
+        result["final_positive_pixels"],
     )
-
     columns[2].metric(
-        "Kabul edilen aday",
-        (
-            f"{result['accepted_candidate_count']}"
-            f"/{result['candidate_count']}"
-        ),
+        "Onaylı / toplam aday",
+        f"{result['confirmed_candidate_count']}/{result['candidate_count']}",
     )
-
     columns[3].metric(
-        "Güvenli su pikseli",
-        result[
-            "safe_water_pixels"
-        ],
+        "Belirsiz / look-alike",
+        f"{result['uncertain_candidate_count']}/{result['lookalike_candidate_count']}",
     )
 
     tabs = st.tabs(
         [
-            "Nihai sonuç",
+            "Nihai araştırma sonucu",
             "Model aşamaları",
             "Aday kararları",
             "Dosyaları indir",
@@ -706,127 +751,85 @@ def render_oil_result(
 
     with tabs[0]:
         first, second = st.columns(2)
-
         with first:
             st.image(
-                mask_to_image(
-                    result[
-                        "final_mask"
-                    ]
-                ),
-                caption=(
-                    "Nihai petrol maskesi"
-                ),
+                mask_to_image(result["final_mask"]),
+                caption="Yalnız CONFIRMED_OIL adaylarından oluşan araştırma maskesi",
                 use_container_width=True,
             )
-
         with second:
             st.image(
                 result["overlay"],
-                caption=(
-                    "SAR üzerinde nihai petrol maskesi"
-                ),
+                caption="SAR üzerinde uzman incelemesi gereken adaylar",
                 use_container_width=True,
             )
 
     with tabs[1]:
         stage_columns = st.columns(3)
-
         with stage_columns[0]:
             st.image(
-                probability_to_image(
-                    result[
-                        "probability"
-                    ]
-                ),
-                caption=(
-                    "Su dışı sıfırlanmış petrol olasılığı"
-                ),
+                probability_to_image(result["probability"]),
+                caption="Güvenli suyla sınırlandırılmış segmentasyon olasılığı",
                 use_container_width=True,
             )
-
         with stage_columns[1]:
             st.image(
-                mask_to_image(
-                    result[
-                        "raw_mask"
-                    ]
-                ),
-                caption=(
-                    "Ham petrol aday maskesi"
-                ),
+                mask_to_image(result["raw_mask"]),
+                caption="Ham petrol aday maskesi",
                 use_container_width=True,
             )
-
         with stage_columns[2]:
             st.image(
-                result[
-                    "candidate_overlay"
-                ],
-                caption=(
-                    "Aday bileşen ve verifier kararları"
-                ),
+                result["candidate_overlay"],
+                caption="CONFIRMED_OIL / UNCERTAIN / LOOK_ALIKE kararları",
                 use_container_width=True,
             )
 
     with tabs[2]:
-        frame = pd.DataFrame(
-            result[
-                "candidate_results"
-            ]
-        )
-
+        frame = pd.DataFrame(result["candidate_results"])
         if frame.empty:
-            st.info(
-                "Minimum alan koşulunu sağlayan "
-                "petrol adayı bulunmadı."
-            )
+            st.info("Minimum alan koşulunu sağlayan aday bulunmadı.")
         else:
-            columns_to_show = [
+            preferred_columns = [
                 "component_index",
                 "decision",
                 "area_pixels",
                 "area_percent_total",
-                "selected_probability",
-                "selected_threshold",
+                "calibrated_probability",
+                "lookalike_threshold",
+                "confirmed_oil_threshold",
             ]
-
+            available_columns = [
+                column
+                for column in preferred_columns
+                if column in frame.columns
+            ]
             st.dataframe(
-                frame[
-                    columns_to_show
-                ],
+                frame[available_columns],
                 use_container_width=True,
                 hide_index=True,
             )
 
     with tabs[3]:
         output_json = {
+            "decision_policy": {
+                "CONFIRMED_OIL": "research candidate; expert review required",
+                "UNCERTAIN": "excluded from final candidate mask",
+                "LOOK_ALIKE": "excluded from final candidate mask",
+            },
             "water_gate": (
-                st.session_state[
-                    "water_result"
-                ]
+                st.session_state["water_result"]
                 | {
-                    "safe_water_mask": (
-                        "binary mask omitted"
-                    ),
-                    "internal_water_mask": (
-                        "binary mask omitted"
-                    ),
-                    "uncertain_mask": (
-                        "binary mask omitted"
-                    ),
-                    "probability": (
-                        "array omitted"
-                    ),
-                    "disagreement": (
-                        "array omitted"
-                    ),
+                    "safe_water_mask": "binary mask omitted",
+                    "internal_water_mask": "binary mask omitted",
+                    "uncertain_mask": "binary mask omitted",
+                    "probability": "array omitted",
+                    "disagreement": "array omitted",
                 }
             ),
             "oil_analysis": {
                 key: value
-                for key, value
-                in result.items()
+                for key, value in result.items()
                 if key not in {
                     "probability",
                     "raw_mask",
@@ -838,39 +841,28 @@ def render_oil_result(
         }
 
         download_columns = st.columns(3)
-
         with download_columns[0]:
             st.download_button(
-                "Nihai maskeyi indir",
-                data=pil_to_png_bytes(
-                    mask_to_image(
-                        result[
-                            "final_mask"
-                        ]
-                    )
-                ),
+                "Aday maskesini indir",
+                data=pil_to_png_bytes(mask_to_image(result["final_mask"])),
                 file_name=(
                     f"{st.session_state['filename_stem']}"
-                    f"_oil_mask.png"
+                    f"_confirmed_candidate_mask.png"
                 ),
                 mime="image/png",
                 use_container_width=True,
             )
-
         with download_columns[1]:
             st.download_button(
-                "Overlay'i indir",
-                data=pil_to_png_bytes(
-                    result["overlay"]
-                ),
+                "Aday overlay'ini indir",
+                data=pil_to_png_bytes(result["overlay"]),
                 file_name=(
                     f"{st.session_state['filename_stem']}"
-                    f"_oil_overlay.png"
+                    f"_candidate_overlay.png"
                 ),
                 mime="image/png",
                 use_container_width=True,
             )
-
         with download_columns[2]:
             st.download_button(
                 "JSON raporunu indir",
@@ -888,10 +880,9 @@ def render_oil_result(
                 use_container_width=True,
             )
 
-
 st.markdown(
     '<div class="main-title">'
-    '🛰️ SAR Petrol Sızıntısı Tespit Sistemi'
+    '🛰️ SAR Petrol Adayı Analiz Sistemi'
     '</div>',
     unsafe_allow_html=True,
 )
@@ -899,7 +890,7 @@ st.markdown(
 st.markdown(
     '<div class="subtitle">'
     'v0.5 giriş doğrulama → v0.6 seçici kara-su '
-    'güvenliği → v0.3 suyla sınırlandırılmış petrol analizi'
+    'güvenliği → v0.8 look-alike-aware aday doğrulama'
     '</div>',
     unsafe_allow_html=True,
 )
@@ -1102,8 +1093,8 @@ with info:
     st.write(
         "**Akış:**",
         (
-            "Giriş kapısı → kara-su kapısı → "
-            "yalnız güvenli suda petrol analizi"
+            "Giriş kapısı → kara-su kapısı → petrol adayı "
+            "segmentasyonu → v0.8 look-alike doğrulaması"
         ),
     )
 
@@ -1172,15 +1163,16 @@ if analyse_button:
                 "pipeline_allowed"
             ]:
                 with st.spinner(
-                    "Petrol modeli yalnız güvenli "
+                    "Petrol adayları ve v0.8 verifier yalnız güvenli "
                     "su piksellerinde çalıştırılıyor..."
                 ):
                     oil_pipeline = (
                         load_oil_pipeline_cached()
                     )
 
-                    oil_result = module[
-                        "run_oil_pipeline"
+                    verifier_module = load_v08_module()
+                    oil_result = verifier_module[
+                        "run_oil_pipeline_v07"
                     ](
                         image=uploaded_image,
                         safe_water_mask=(
@@ -1272,9 +1264,9 @@ if not water_result[
     st.markdown(
         """
         <div class="scientific-note">
-        Petrol modeli bilinçli olarak çalıştırılmadı.
-        Bu sahnede operasyonel petrol maskesi tamamen
-        siyah kabul edilir.
+        Petrol analizi güvenlik nedeniyle çalıştırılmadı.
+        Bu sonuç petrol yok anlamına gelmez; sahne belirsiz
+        olarak engellenmiştir.
         </div>
         """,
         unsafe_allow_html=True,
@@ -1296,7 +1288,7 @@ if oil_result is None:
 
 st.divider()
 st.subheader(
-    "3. Güvenli suyla sınırlandırılmış petrol analizi"
+    "3. v0.8 petrol adayı ve look-alike analizi"
 )
 
 render_oil_result(
@@ -1309,11 +1301,13 @@ st.markdown(
     <div class="scientific-note">
     <b>Bilimsel not:</b>
     Petrol adayları yalnız seçici kara-su kapısının
-    kabul ettiği yüksek güvenli su piksellerinde
-    üretilebilir. Kara ve belirsiz alanlar nihai petrol
-    maskesine giremez. Bu sistem geniş ölçekli operasyonel
-    geçerlilik iddiası olmayan bir araştırma prototipidir.
+    kabul ettiği yüksek güvenli su piksellerinde üretilebilir.
+    Kara ve belirsiz alanlar araştırma maskesine giremez.
+    Yalnız CONFIRMED_OIL kararı alan bölgeler aday maskesine
+    eklenir. Pozitif sonuç kesin petrol kararı değildir ve
+    uzman incelemesi gerektirir.
     </div>
     """,
     unsafe_allow_html=True,
 )
+

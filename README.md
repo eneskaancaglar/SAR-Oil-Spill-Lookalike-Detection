@@ -45,3 +45,14 @@ Bu manifestte:
 - Elle doğrulanmamış diğer kıyı örnekleri otomatik olarak eğitim dışı kalır.
 
 Bu yedi maske petrol/look-alike etiketi değildir; yalnız kara-su ayrımıdır.
+
+## Final Detection Limitation
+
+The final system is a safeguarded research and decision-support prototype, not an operational oil-spill detector.
+
+Manual exploratory checks on known positive DARTIS scenes revealed false negatives. Some `oc` and `ow` scenes produced no high-confidence candidate, while some negative scenes produced false alarms in the independent holdout. Therefore:
+
+- a positive output requires expert review,
+- an empty candidate mask does not prove that oil is absent,
+- the system must not be used for autonomous operational decisions,
+- the frozen v0.8 pipeline is the final internship handoff version.
