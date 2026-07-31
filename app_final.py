@@ -85,9 +85,15 @@ V08_OPERATIONAL_CONFIG = (
 )
 
 
+PAGE_ICON_PATH = ROOT / "SAR_Oil_Spill_Scanner.ico"
+
 st.set_page_config(
-    page_title="SAR Petrol Taraması — Final Hassas Mod",
-    page_icon="🛰️",
+    page_title="SAR Oil Spill Scanner",
+    page_icon=(
+        str(PAGE_ICON_PATH)
+        if PAGE_ICON_PATH.exists()
+        else "🛰️"
+    ),
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -147,10 +153,434 @@ st.markdown(
 )
 
 
+TRANSLATIONS: dict[str, dict[str, str]] = {
+    "en": {
+        "language_label": "Language / Dil",
+        "app_title": "🛰️ SAR Oil Spill Scanner — Final Sensitive Mode",
+        "app_subtitle": (
+            "Input validation → definite-land exclusion → "
+            "sensitive oil screening → candidate verification"
+        ),
+        "sidebar_header": "Final sensitive screening settings",
+        "scan_threshold": "Sensitive oil-screening threshold",
+        "scan_threshold_help": (
+            "0.20 is the default sensitive-screening threshold. "
+            "Lower values may reduce missed detections but can increase false alarms."
+        ),
+        "minimum_candidate_ratio": "Minimum candidate ratio",
+        "minimum_candidate_pixels": "Minimum candidate pixels",
+        "input_gate_model": "Input-validation model",
+        "locked_negative_test": "Locked negative test:",
+        "false_accepts": "False accepts:",
+        "water_gate_model": "Land-water safety model",
+        "locked_test_acceptance": "Locked-test acceptance:",
+        "water_precision": "Water precision:",
+        "land_leakage": "Land leakage:",
+        "research_warning": (
+            "This is a research prototype. It must not be used for operational "
+            "decisions without expert validation."
+        ),
+        "upload_label": "Upload a SAR image",
+        "upload_prompt": "Upload a SAR image to begin.",
+        "image_read_error": "The image could not be read: {error}",
+        "uploaded_image_caption": "Uploaded grayscale SAR image",
+        "file_label": "**File:**",
+        "dimensions_label": "**Dimensions:**",
+        "workflow_label": "**Workflow:**",
+        "workflow_text": (
+            "Validate input → exclude definite land → screen for oil at the "
+            "selected threshold → verify candidates"
+        ),
+        "start_scan": "Start sensitive screening",
+        "spinner_input": "Validating the input domain...",
+        "spinner_water": "Running the land-water safety gate...",
+        "spinner_oil": (
+            "Sensitive screening mode: scanning non-definite-land areas "
+            "at threshold {threshold:.2f}..."
+        ),
+        "section_input": "1. Input validation",
+        "section_water": "2. Land-water safety",
+        "section_oil": "3. Final sensitive oil screening and candidate verification",
+        "water_result_missing": (
+            "The input was accepted, but the land-water result could not be generated."
+        ),
+        "oil_result_missing": (
+            "The water stage completed, but the oil-analysis result could not be generated."
+        ),
+        "sensitive_mode_note": (
+            "<div class=\"scientific-note\">"
+            "<b>Sensitive screening mode:</b> Oil analysis was performed even though "
+            "the water gate was uncertain. Safe and uncertain areas outside definite "
+            "land were screened. This approach aims to reduce missed detections but "
+            "may increase false alarms."
+            "</div>"
+        ),
+        "scientific_note": (
+            "<div class=\"scientific-note\">"
+            "<b>Scientific note:</b> Final sensitive screening examines safe and "
+            "uncertain areas outside definite land using the selected threshold. "
+            "When the absolute U-Net mask is empty, the relative model response and "
+            "local darkness are used only for suspicious-region screening. The raw "
+            "screening mask keeps suspicious regions visible and may contain false "
+            "positives. Only regions classified as CONFIRMED_OIL are added to the "
+            "confirmed mask. Both outputs require expert review."
+            "</div>"
+        ),
+        "required_file_missing": "Required file not found: {path}",
+        "input_gate_config_error": "The input-gate configuration is empty or unreadable.",
+        "operational_gate_error": "The v0.8 operational gate did not pass.",
+        "input_accept": (
+            "<div class=\"accept-box\">"
+            "✅ The input was accepted as a supported marine/coastal SAR scene."
+            "</div>"
+        ),
+        "input_reject": (
+            "<div class=\"reject-box\">"
+            "⛔ The input is outside the supported SAR domain. "
+            "The downstream models were not run."
+            "</div>"
+        ),
+        "input_uncertain": (
+            "<div class=\"uncertain-box\">"
+            "⚠️ The input could not be validated safely. "
+            "The downstream models were not run."
+            "</div>"
+        ),
+        "decision": "Decision",
+        "supported_input_score": "Supported-input score",
+        "dartis_similarity": "DARTIS similarity",
+        "decision_ACCEPT": "ACCEPTED",
+        "decision_REJECT": "REJECTED",
+        "decision_UNCERTAIN": "UNCERTAIN",
+        "water_accept": (
+            "<div class=\"accept-box\">"
+            "✅ The land-water model accepted a safe water area. In sensitive "
+            "screening mode, safe and uncertain regions outside definite land "
+            "are being screened."
+            "</div>"
+        ),
+        "water_uncertain": (
+            "<div class=\"uncertain-box\">"
+            "⚠️ The land-water separation is uncertain. Oil analysis was not "
+            "stopped; areas outside definite land are being screened in "
+            "sensitive mode."
+            "</div>"
+        ),
+        "water_decision": "Water decision",
+        "safe_water_fraction": "Safe-water fraction",
+        "uncertain_area": "Uncertain area",
+        "screened_area": "Screened area",
+        "safe_water_caption": "High-confidence water",
+        "uncertain_area_caption": "Uncertain area included in screening",
+        "analysis_mask_caption": "Sensitive-screening analysis mask",
+        "water_probability_caption": "Land-water ensemble probability map",
+        "oil_candidate": (
+            "<div class=\"reject-box\">"
+            "🔴 OIL CANDIDATE — EXPERT REVIEW REQUIRED"
+            "</div>"
+        ),
+        "suspicious_region": (
+            "<div class=\"uncertain-box\">"
+            "🟡 SUSPICIOUS REGION FOUND — DISPLAYED IN THE SENSITIVE-SCREENING "
+            "MASK; THIS IS NOT A CONFIRMED OIL DECISION"
+            "</div>"
+        ),
+        "no_high_confidence_candidate": (
+            "<div class=\"accept-box\">"
+            "🟢 NO HIGH-CONFIDENCE OIL CANDIDATE FOUND"
+            "<br><small>This result does not prove that the image contains no oil.</small>"
+            "</div>"
+        ),
+        "screening_pixels": "Sensitive-screening pixels",
+        "confirmed_pixels": "Confirmed-candidate pixels",
+        "confirmed_total": "Confirmed / total candidates",
+        "uncertain_lookalike": "Uncertain / look-alike",
+        "tab_final_result": "Final research result",
+        "tab_screening_mask": "Sensitive-screening mask",
+        "tab_candidate_decisions": "Candidate decisions",
+        "tab_downloads": "Download files",
+        "confirmed_mask_caption": (
+            "Research mask containing only CONFIRMED_OIL candidates"
+        ),
+        "expert_overlay_caption": "Candidates requiring expert review on the SAR image",
+        "unet_probability_caption": (
+            "U-Net probability map outside definite land"
+        ),
+        "screening_mask_caption": (
+            "Final sensitive suspicious-region mask — mode: {mode}"
+        ),
+        "candidate_overlay_caption": (
+            "CONFIRMED_OIL / UNCERTAIN / LOOK_ALIKE decisions"
+        ),
+        "no_candidates": "No candidate met the minimum-area requirement.",
+        "download_mask": "Download candidate mask",
+        "download_overlay": "Download candidate overlay",
+        "download_json": "Download JSON report",
+        "policy_confirmed": "research candidate; expert review required",
+        "policy_uncertain": "excluded from the final candidate mask",
+        "policy_lookalike": "excluded from the final candidate mask",
+        "mode_ABSOLUTE_UNET_THRESHOLD": "absolute U-Net threshold",
+        "mode_RELATIVE_TOP_0_5_PERCENT": "relative top 0.5%",
+        "mode_NO_VALID_AREA": "no valid analysis area",
+        "mode_NO_MODEL_RESPONSE": "no model response",
+        "candidate_CONFIRMED_OIL": "Confirmed oil",
+        "candidate_UNCERTAIN": "Uncertain",
+        "candidate_LOOK_ALIKE": "Look-alike",
+        "column_component_index": "Component",
+        "column_decision": "Decision",
+        "column_area_pixels": "Area (pixels)",
+        "column_area_percent_total": "Area (%)",
+        "column_calibrated_probability": "Calibrated probability",
+        "column_lookalike_threshold": "Look-alike threshold",
+        "column_confirmed_oil_threshold": "Confirmed-oil threshold",
+    },
+    "tr": {
+        "language_label": "Dil / Language",
+        "app_title": "🛰️ SAR Petrol Sızıntısı Tarayıcısı — Final Hassas Mod",
+        "app_subtitle": (
+            "Girdi doğrulama → kesin karayı dışlama → "
+            "hassas petrol taraması → aday doğrulama"
+        ),
+        "sidebar_header": "Final hassas tarama ayarları",
+        "scan_threshold": "Hassas petrol tarama eşiği",
+        "scan_threshold_help": (
+            "0.20 varsayılan hassas tarama eşiğidir. Eşik düştükçe "
+            "kaçırma azalabilir ancak yanlış alarm artabilir."
+        ),
+        "minimum_candidate_ratio": "Minimum aday oranı",
+        "minimum_candidate_pixels": "Minimum aday pikseli",
+        "input_gate_model": "Girdi doğrulama modeli",
+        "locked_negative_test": "Negatif kilitli test:",
+        "false_accepts": "Yanlış kabul:",
+        "water_gate_model": "Kara-su güvenlik modeli",
+        "locked_test_acceptance": "Kilitli test kabulü:",
+        "water_precision": "Su hassasiyeti:",
+        "land_leakage": "Kara sızıntısı:",
+        "research_warning": (
+            "Bu bir araştırma prototipidir. Uzman doğrulaması olmadan "
+            "operasyonel kararlar için kullanılmamalıdır."
+        ),
+        "upload_label": "SAR görüntüsü yükleyin",
+        "upload_prompt": "Başlamak için bir SAR görüntüsü yükleyin.",
+        "image_read_error": "Görüntü okunamadı: {error}",
+        "uploaded_image_caption": "Yüklenen gri seviye SAR görüntüsü",
+        "file_label": "**Dosya:**",
+        "dimensions_label": "**Boyut:**",
+        "workflow_label": "**İşlem akışı:**",
+        "workflow_text": (
+            "Girdiyi doğrula → kesin karayı dışla → seçilen eşikle petrol tara "
+            "→ adayları doğrula"
+        ),
+        "start_scan": "Hassas taramayı başlat",
+        "spinner_input": "Girdi alanı doğrulanıyor...",
+        "spinner_water": "Kara-su güvenlik kapısı çalıştırılıyor...",
+        "spinner_oil": (
+            "Hassas tarama modu: kesin kara dışındaki alanlar "
+            "{threshold:.2f} eşiğiyle taranıyor..."
+        ),
+        "section_input": "1. Girdi doğrulama",
+        "section_water": "2. Kara-su güvenliği",
+        "section_oil": "3. Final hassas petrol taraması ve aday doğrulama",
+        "water_result_missing": (
+            "Girdi kabul edildi ancak kara-su sonucu oluşturulamadı."
+        ),
+        "oil_result_missing": (
+            "Su aşaması tamamlandı ancak petrol analizi sonucu oluşturulamadı."
+        ),
+        "sensitive_mode_note": (
+            "<div class=\"scientific-note\">"
+            "<b>Hassas tarama modu:</b> Su kapısı belirsiz olsa da petrol "
+            "analizi çalıştırıldı. Kesin kara dışındaki güvenli ve belirsiz "
+            "alanlar tarandı. Bu yaklaşım kaçırmayı azaltmayı hedefler ancak "
+            "yanlış alarmı artırabilir."
+            "</div>"
+        ),
+        "scientific_note": (
+            "<div class=\"scientific-note\">"
+            "<b>Bilimsel not:</b> Final hassas tarama, kesin kara dışındaki "
+            "güvenli ve belirsiz alanları seçilen eşikle inceler. Mutlak U-Net "
+            "maskesi boş kalırsa göreli model yanıtı ve yerel koyuluk yalnızca "
+            "şüpheli bölge taraması için kullanılır. Ham tarama maskesi şüpheli "
+            "bölgeleri görünür tutar ve yanlış pozitif içerebilir. Yalnızca "
+            "CONFIRMED_OIL olarak sınıflandırılan bölgeler onaylı maskeye "
+            "eklenir. Her iki çıktı da uzman incelemesi gerektirir."
+            "</div>"
+        ),
+        "required_file_missing": "Gerekli dosya bulunamadı: {path}",
+        "input_gate_config_error": "Girdi kapısı yapılandırması boş veya okunamadı.",
+        "operational_gate_error": "v0.8 operasyonel kapısı başarılı değil.",
+        "input_accept": (
+            "<div class=\"accept-box\">"
+            "✅ Girdi desteklenen deniz/kıyı SAR alanına kabul edildi."
+            "</div>"
+        ),
+        "input_reject": (
+            "<div class=\"reject-box\">"
+            "⛔ Girdi desteklenen SAR alanına uygun değil. "
+            "Sonraki modeller çalıştırılmadı."
+            "</div>"
+        ),
+        "input_uncertain": (
+            "<div class=\"uncertain-box\">"
+            "⚠️ Girdi güvenli biçimde doğrulanamadı. "
+            "Sonraki modeller çalıştırılmadı."
+            "</div>"
+        ),
+        "decision": "Karar",
+        "supported_input_score": "Desteklenen girdi skoru",
+        "dartis_similarity": "DARTIS benzerliği",
+        "decision_ACCEPT": "KABUL EDİLDİ",
+        "decision_REJECT": "REDDEDİLDİ",
+        "decision_UNCERTAIN": "BELİRSİZ",
+        "water_accept": (
+            "<div class=\"accept-box\">"
+            "✅ Kara-su modeli güvenli su alanını kabul etti. Hassas tarama "
+            "modunda kesin kara dışındaki güvenli ve belirsiz alanlar taranıyor."
+            "</div>"
+        ),
+        "water_uncertain": (
+            "<div class=\"uncertain-box\">"
+            "⚠️ Kara-su ayrımı belirsiz. Petrol analizi durdurulmadı; "
+            "kesin kara dışındaki alanlar hassas modda taranıyor."
+            "</div>"
+        ),
+        "water_decision": "Su kararı",
+        "safe_water_fraction": "Güvenli su oranı",
+        "uncertain_area": "Belirsiz alan",
+        "screened_area": "Taranan alan",
+        "safe_water_caption": "Yüksek güvenli su",
+        "uncertain_area_caption": "Taramaya dahil edilen belirsiz alan",
+        "analysis_mask_caption": "Hassas tarama analiz maskesi",
+        "water_probability_caption": "Kara-su ensemble olasılık haritası",
+        "oil_candidate": (
+            "<div class=\"reject-box\">"
+            "🔴 PETROL ADAYI — UZMAN İNCELEMESİ GEREKLİ"
+            "</div>"
+        ),
+        "suspicious_region": (
+            "<div class=\"uncertain-box\">"
+            "🟡 ŞÜPHELİ BÖLGE BULUNDU — HASSAS TARAMA MASKESİNDE "
+            "GÖSTERİLİYOR; BU KESİN PETROL KARARI DEĞİLDİR"
+            "</div>"
+        ),
+        "no_high_confidence_candidate": (
+            "<div class=\"accept-box\">"
+            "🟢 YÜKSEK GÜVENLİ PETROL ADAYI BULUNMADI"
+            "<br><small>Bu sonuç görüntüde petrol bulunmadığını kanıtlamaz.</small>"
+            "</div>"
+        ),
+        "screening_pixels": "Hassas tarama pikselleri",
+        "confirmed_pixels": "Onaylı aday pikselleri",
+        "confirmed_total": "Onaylı / toplam aday",
+        "uncertain_lookalike": "Belirsiz / benzer yapı",
+        "tab_final_result": "Nihai araştırma sonucu",
+        "tab_screening_mask": "Hassas tarama maskesi",
+        "tab_candidate_decisions": "Aday kararları",
+        "tab_downloads": "Dosyaları indir",
+        "confirmed_mask_caption": (
+            "Yalnızca CONFIRMED_OIL adaylarından oluşan araştırma maskesi"
+        ),
+        "expert_overlay_caption": "SAR görüntüsü üzerinde uzman incelemesi gereken adaylar",
+        "unet_probability_caption": (
+            "Kesin kara dışındaki alanda U-Net olasılık haritası"
+        ),
+        "screening_mask_caption": (
+            "Final hassas şüpheli bölge maskesi — mod: {mode}"
+        ),
+        "candidate_overlay_caption": (
+            "CONFIRMED_OIL / UNCERTAIN / LOOK_ALIKE kararları"
+        ),
+        "no_candidates": "Minimum alan koşulunu sağlayan aday bulunamadı.",
+        "download_mask": "Aday maskesini indir",
+        "download_overlay": "Aday katmanını indir",
+        "download_json": "JSON raporunu indir",
+        "policy_confirmed": "araştırma adayı; uzman incelemesi gerekli",
+        "policy_uncertain": "nihai aday maskesinden çıkarıldı",
+        "policy_lookalike": "nihai aday maskesinden çıkarıldı",
+        "mode_ABSOLUTE_UNET_THRESHOLD": "mutlak U-Net eşiği",
+        "mode_RELATIVE_TOP_0_5_PERCENT": "göreli en yüksek %0,5",
+        "mode_NO_VALID_AREA": "geçerli analiz alanı yok",
+        "mode_NO_MODEL_RESPONSE": "model yanıtı yok",
+        "candidate_CONFIRMED_OIL": "Onaylı petrol",
+        "candidate_UNCERTAIN": "Belirsiz",
+        "candidate_LOOK_ALIKE": "Benzer yapı",
+        "column_component_index": "Bileşen",
+        "column_decision": "Karar",
+        "column_area_pixels": "Alan (piksel)",
+        "column_area_percent_total": "Alan (%)",
+        "column_calibrated_probability": "Kalibre edilmiş olasılık",
+        "column_lookalike_threshold": "Benzer yapı eşiği",
+        "column_confirmed_oil_threshold": "Onaylı petrol eşiği",
+    },
+}
+
+
+if "app_language" not in st.session_state:
+    st.session_state["app_language"] = "English"
+
+
+def current_language_code() -> str:
+    return (
+        "tr"
+        if st.session_state.get("app_language") == "Türkçe"
+        else "en"
+    )
+
+
+def t(key: str, **values: Any) -> str:
+    template = TRANSLATIONS[current_language_code()][key]
+    return template.format(**values)
+
+
+def localize_decision(value: Any) -> str:
+    key = f"decision_{str(value)}"
+    return TRANSLATIONS[current_language_code()].get(
+        key,
+        str(value),
+    )
+
+
+def localize_candidate_decision(value: Any) -> str:
+    key = f"candidate_{str(value)}"
+    return TRANSLATIONS[current_language_code()].get(
+        key,
+        str(value),
+    )
+
+
+def localize_screening_mode(value: Any) -> str:
+    key = f"mode_{str(value)}"
+    return TRANSLATIONS[current_language_code()].get(
+        key,
+        str(value),
+    )
+
+
+def localize_candidate_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    localized = frame.copy()
+
+    if "decision" in localized.columns:
+        localized["decision"] = localized["decision"].map(
+            localize_candidate_decision
+        )
+
+    rename_map = {
+        "component_index": t("column_component_index"),
+        "decision": t("column_decision"),
+        "area_pixels": t("column_area_pixels"),
+        "area_percent_total": t("column_area_percent_total"),
+        "calibrated_probability": t("column_calibrated_probability"),
+        "lookalike_threshold": t("column_lookalike_threshold"),
+        "confirmed_oil_threshold": t("column_confirmed_oil_threshold"),
+    }
+
+    return localized.rename(columns=rename_map)
+
+
 def require_file(path: Path) -> None:
     if not path.exists():
         raise FileNotFoundError(
-            f"Gerekli dosya bulunamadı: {path}"
+            t("required_file_missing", path=path)
         )
 
 
@@ -427,10 +857,10 @@ def prepare_image_for_models(
     multiple: int = 32,
     maximum_side: int = 1024,
 ) -> Image.Image:
-    '''
-    B?y?k g?r?nt?y? en-boy oran?n? koruyarak k???lt?r.
-    Ard?ndan sa? ve alt kenar? 32 kat?na tamamlar.
-    '''
+    """
+    Resize large images while preserving aspect ratio, then pad the
+    right and bottom edges so both dimensions are multiples of 32.
+    """
     grayscale = image.convert("L")
 
     width, height = grayscale.size
@@ -596,7 +1026,7 @@ def load_input_gate() -> dict[str, Any]:
 
     if not config:
         raise RuntimeError(
-            "Input-gate config boş veya okunamadı."
+            t("input_gate_config_error")
         )
 
     prototype_data = np.load(
@@ -855,7 +1285,7 @@ def load_oil_pipeline_cached() -> dict[str, Any]:
     config = load_json(V08_OPERATIONAL_CONFIG)
 
     if not config.get("operational_gate_passed", False):
-        raise RuntimeError("v0.8 operational gate PASS değil.")
+        raise RuntimeError(t("operational_gate_error"))
 
     pipeline["verifier_model"].load_state_dict(
         checkpoint["model_state_dict"],
@@ -873,78 +1303,49 @@ def load_oil_pipeline_cached() -> dict[str, Any]:
 def render_input_gate(
     result: dict[str, Any],
 ) -> None:
-    decision = result[
-        "decision"
-    ]
+    decision = result["decision"]
 
     if decision == "ACCEPT":
-        st.markdown(
-            '<div class="accept-box">'
-            '✅ Girdi desteklenen deniz/kıyı SAR '
-            'alanına kabul edildi.'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+        message = t("input_accept")
     elif decision == "REJECT":
-        st.markdown(
-            '<div class="reject-box">'
-            '⛔ Girdi desteklenen SAR alanına uygun değil. '
-            'Sonraki modeller çalıştırılmadı.'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+        message = t("input_reject")
     else:
-        st.markdown(
-            '<div class="uncertain-box">'
-            '⚠️ Girdi güvenli biçimde doğrulanamadı. '
-            'Sonraki modeller çalıştırılmadı.'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+        message = t("input_uncertain")
+
+    st.markdown(
+        message,
+        unsafe_allow_html=True,
+    )
 
     columns = st.columns(3)
 
     columns[0].metric(
-        "Karar",
-        decision,
+        t("decision"),
+        localize_decision(decision),
     )
 
     columns[1].metric(
-        "Desteklenen giriş skoru",
-        (
-            f"%{result['supported_probability'] * 100.0:.3f}"
-        ),
+        t("supported_input_score"),
+        f"{result['supported_probability'] * 100.0:.3f}%",
     )
 
     columns[2].metric(
-        "DARTIS benzerliği",
-        (
-            f"{result['prototype_similarity']:.4f}"
-        ),
+        t("dartis_similarity"),
+        f"{result['prototype_similarity']:.4f}",
     )
 
 
 def render_water_gate(
     result: dict[str, Any],
 ) -> None:
-    if result["pipeline_allowed"]:
-        st.markdown(
-            '<div class="accept-box">'
-            '✅ Kara-su modeli güvenli su alanını kabul etti. '
-            'Hassas tarama modunda kesin kara dışındaki güvenli ve '
-            'belirsiz alanlar taranıyor.'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-    else:
-        st.markdown(
-            '<div class="uncertain-box">'
-            '⚠️ Kara-su ayrımı belirsiz. Petrol analizi '
-            'durdurulmadı; kesin kara dışındaki alanlar '
-            'hassas tarama modunda taranıyor.'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+    st.markdown(
+        (
+            t("water_accept")
+            if result["pipeline_allowed"]
+            else t("water_uncertain")
+        ),
+        unsafe_allow_html=True,
+    )
 
     analysis_mask = result.get(
         "analysis_water_mask",
@@ -962,20 +1363,20 @@ def render_water_gate(
 
     columns = st.columns(4)
     columns[0].metric(
-        "Su kararı",
-        result["decision"],
+        t("water_decision"),
+        localize_decision(result["decision"]),
     )
     columns[1].metric(
-        "Güvenli su oranı",
-        f"%{result['predicted_water_fraction'] * 100.0:.2f}",
+        t("safe_water_fraction"),
+        f"{result['predicted_water_fraction'] * 100.0:.2f}%",
     )
     columns[2].metric(
-        "Belirsiz alan",
-        f"%{result['uncertain_fraction'] * 100.0:.2f}",
+        t("uncertain_area"),
+        f"{result['uncertain_fraction'] * 100.0:.2f}%",
     )
     columns[3].metric(
-        "Taranan alan",
-        f"%{float(np.asarray(analysis_mask).mean()) * 100.0:.2f}",
+        t("screened_area"),
+        f"{float(np.asarray(analysis_mask).mean()) * 100.0:.2f}%",
     )
 
     views = st.columns(4)
@@ -985,7 +1386,7 @@ def render_water_gate(
             mask_to_image(
                 result["internal_water_mask"]
             ),
-            caption="Yüksek güvenli su",
+            caption=t("safe_water_caption"),
             use_container_width=True,
         )
 
@@ -994,7 +1395,7 @@ def render_water_gate(
             mask_to_image(
                 result["uncertain_mask"]
             ),
-            caption="Belirsiz fakat taramaya açık alan",
+            caption=t("uncertain_area_caption"),
             use_container_width=True,
         )
 
@@ -1003,7 +1404,7 @@ def render_water_gate(
             mask_to_image(
                 analysis_mask
             ),
-            caption="Hassas tarama analiz maskesi",
+            caption=t("analysis_mask_caption"),
             use_container_width=True,
         )
 
@@ -1012,7 +1413,7 @@ def render_water_gate(
             probability_to_image(
                 result["probability"]
             ),
-            caption="Kara-su ensemble olasılık haritası",
+            caption=t("water_probability_caption"),
             use_container_width=True,
         )
 
@@ -1038,53 +1439,49 @@ def render_oil_result(
             "ABSOLUTE_UNET_THRESHOLD",
         )
     )
+
     if result["oil_detected"]:
-        st.markdown(
-            '<div class="reject-box">'
-            '🔴 PETROL ADAYI — UZMAN İNCELEMESİ GEREKLİ'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+        status_message = t("oil_candidate")
     elif screening_pixels > 0:
-        st.markdown(
-            '<div class="uncertain-box">'
-            '🟡 ŞÜPHELİ BÖLGE BULUNDU — HASSAS TARAMA MASKESİNDE '
-            'GÖSTERİLİYOR; KESİN PETROL KARARI DEĞİLDİR'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+        status_message = t("suspicious_region")
     else:
-        st.markdown(
-            '<div class="accept-box">'
-            '🟢 YÜKSEK GÜVENLİ PETROL ADAYI BULUNMADI<br><small>Bu sonuç görüntüde petrol bulunmadığını kanıtlamaz.</small>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+        status_message = t("no_high_confidence_candidate")
+
+    st.markdown(
+        status_message,
+        unsafe_allow_html=True,
+    )
 
     columns = st.columns(4)
     columns[0].metric(
-        "Hassas tarama pikseli",
+        t("screening_pixels"),
         screening_pixels,
     )
     columns[1].metric(
-        "Onaylı aday pikseli",
+        t("confirmed_pixels"),
         result["final_positive_pixels"],
     )
     columns[2].metric(
-        "Onaylı / toplam aday",
-        f"{result['confirmed_candidate_count']}/{result['candidate_count']}",
+        t("confirmed_total"),
+        (
+            f"{result['confirmed_candidate_count']}"
+            f"/{result['candidate_count']}"
+        ),
     )
     columns[3].metric(
-        "Belirsiz / look-alike",
-        f"{result['uncertain_candidate_count']}/{result['lookalike_candidate_count']}",
+        t("uncertain_lookalike"),
+        (
+            f"{result['uncertain_candidate_count']}"
+            f"/{result['lookalike_candidate_count']}"
+        ),
     )
 
     tabs = st.tabs(
         [
-            "Nihai araştırma sonucu",
-            "Hassas tarama maskesi",
-            "Aday kararları",
-            "Dosyaları indir",
+            t("tab_final_result"),
+            t("tab_screening_mask"),
+            t("tab_candidate_decisions"),
+            t("tab_downloads"),
         ]
     )
 
@@ -1093,13 +1490,13 @@ def render_oil_result(
         with first:
             st.image(
                 mask_to_image(result["final_mask"]),
-                caption="Yalnız CONFIRMED_OIL adaylarından oluşan araştırma maskesi",
+                caption=t("confirmed_mask_caption"),
                 use_container_width=True,
             )
         with second:
             st.image(
                 result["overlay"],
-                caption="SAR üzerinde uzman incelemesi gereken adaylar",
+                caption=t("expert_overlay_caption"),
                 use_container_width=True,
             )
 
@@ -1108,29 +1505,33 @@ def render_oil_result(
         with stage_columns[0]:
             st.image(
                 probability_to_image(result["probability"]),
-                caption="Kesin kara dışındaki alanda U-Net olasılık haritası",
+                caption=t("unet_probability_caption"),
                 use_container_width=True,
             )
         with stage_columns[1]:
             st.image(
                 mask_to_image(screening_mask),
-                caption=(
-                    "Final hassas şüpheli-bölge maskesi — "
-                    f"mod: {screening_mode}"
+                caption=t(
+                    "screening_mask_caption",
+                    mode=localize_screening_mode(
+                        screening_mode
+                    ),
                 ),
                 use_container_width=True,
             )
         with stage_columns[2]:
             st.image(
                 result["candidate_overlay"],
-                caption="CONFIRMED_OIL / UNCERTAIN / LOOK_ALIKE kararları",
+                caption=t("candidate_overlay_caption"),
                 use_container_width=True,
             )
 
     with tabs[2]:
-        frame = pd.DataFrame(result["candidate_results"])
+        frame = pd.DataFrame(
+            result["candidate_results"]
+        )
         if frame.empty:
-            st.info("Minimum alan koşulunu sağlayan aday bulunmadı.")
+            st.info(t("no_candidates"))
         else:
             preferred_columns = [
                 "component_index",
@@ -1146,18 +1547,22 @@ def render_oil_result(
                 for column in preferred_columns
                 if column in frame.columns
             ]
+            display_frame = localize_candidate_frame(
+                frame[available_columns]
+            )
             st.dataframe(
-                frame[available_columns],
+                display_frame,
                 use_container_width=True,
                 hide_index=True,
             )
 
     with tabs[3]:
         output_json = {
+            "interface_language": current_language_code(),
             "decision_policy": {
-                "CONFIRMED_OIL": "research candidate; expert review required",
-                "UNCERTAIN": "excluded from final candidate mask",
-                "LOOK_ALIKE": "excluded from final candidate mask",
+                "CONFIRMED_OIL": t("policy_confirmed"),
+                "UNCERTAIN": t("policy_uncertain"),
+                "LOOK_ALIKE": t("policy_lookalike"),
             },
             "water_gate": (
                 st.session_state["water_result"]
@@ -1186,8 +1591,12 @@ def render_oil_result(
         download_columns = st.columns(3)
         with download_columns[0]:
             st.download_button(
-                "Aday maskesini indir",
-                data=pil_to_png_bytes(mask_to_image(result["final_mask"])),
+                t("download_mask"),
+                data=pil_to_png_bytes(
+                    mask_to_image(
+                        result["final_mask"]
+                    )
+                ),
                 file_name=(
                     f"{st.session_state['filename_stem']}"
                     f"_confirmed_candidate_mask.png"
@@ -1197,8 +1606,10 @@ def render_oil_result(
             )
         with download_columns[1]:
             st.download_button(
-                "Aday overlay'ini indir",
-                data=pil_to_png_bytes(result["overlay"]),
+                t("download_overlay"),
+                data=pil_to_png_bytes(
+                    result["overlay"]
+                ),
                 file_name=(
                     f"{st.session_state['filename_stem']}"
                     f"_candidate_overlay.png"
@@ -1208,7 +1619,7 @@ def render_oil_result(
             )
         with download_columns[2]:
             st.download_button(
-                "JSON raporunu indir",
+                t("download_json"),
                 data=json.dumps(
                     output_json,
                     indent=2,
@@ -1223,18 +1634,22 @@ def render_oil_result(
                 use_container_width=True,
             )
 
+
 st.markdown(
-    '<div class="main-title">'
-    '🛰️ SAR Petrol Taraması — Final Hassas Mod'
-    '</div>',
+    (
+        '<div class="main-title">'
+        f'{t("app_title")}'
+        '</div>'
+    ),
     unsafe_allow_html=True,
 )
 
 st.markdown(
-    '<div class="subtitle">'
-    'Girdi doğrulama → kesin karayı dışlama → '
-    'hassas petrol taraması → aday doğrulama'
-    '</div>',
+    (
+        '<div class="subtitle">'
+        f'{t("app_subtitle")}'
+        '</div>'
+    ),
     unsafe_allow_html=True,
 )
 
@@ -1249,20 +1664,26 @@ water_summary = load_json(
 
 
 with st.sidebar:
+    st.selectbox(
+        t("language_label"),
+        options=[
+            "English",
+            "Türkçe",
+        ],
+        key="app_language",
+    )
+
     st.header(
-        "Final hassas tarama ayarları"
+        t("sidebar_header")
     )
 
     segmentation_threshold = st.slider(
-        "Hassas petrol tarama eşiği",
+        t("scan_threshold"),
         min_value=0.10,
         max_value=0.60,
         value=0.20,
         step=0.05,
-        help=(
-            "0.20 varsayılan hassas taramadır. Eşik düştükçe "
-            "kaçırma azalabilir fakat yanlış alarm artabilir."
-        ),
+        help=t("scan_threshold_help"),
     )
 
     st.session_state[
@@ -1273,7 +1694,7 @@ with st.sidebar:
 
     minimum_component_ratio = (
         st.number_input(
-            "Minimum aday oranı",
+            t("minimum_candidate_ratio"),
             min_value=0.0001,
             max_value=0.0100,
             value=0.0005,
@@ -1285,7 +1706,7 @@ with st.sidebar:
 
     minimum_component_pixels = (
         st.number_input(
-            "Minimum aday pikseli",
+            t("minimum_candidate_pixels"),
             min_value=1,
             max_value=10000,
             value=16,
@@ -1296,12 +1717,12 @@ with st.sidebar:
 
     st.divider()
     st.subheader(
-        "Girdi doğrulama modeli"
+        t("input_gate_model")
     )
 
     if input_summary:
         st.write(
-            "Negatif kilitli test:",
+            t("locked_negative_test"),
             input_summary.get(
                 "total_negative_samples",
                 0,
@@ -1309,7 +1730,7 @@ with st.sidebar:
         )
 
         st.write(
-            "Yanlış kabul:",
+            t("false_accepts"),
             input_summary.get(
                 "false_accept_count",
                 0,
@@ -1318,7 +1739,7 @@ with st.sidebar:
 
     st.divider()
     st.subheader(
-        "Kara-su güvenlik modeli"
+        t("water_gate_model")
     )
 
     if water_summary:
@@ -1328,7 +1749,7 @@ with st.sidebar:
         )
 
         st.write(
-            "Kilitli test kabul:",
+            t("locked_test_acceptance"),
             (
                 f"{water_summary.get('accepted_count', 0)}"
                 f"/{water_summary.get('locked_test_count', 0)}"
@@ -1336,27 +1757,26 @@ with st.sidebar:
         )
 
         st.write(
-            "Su precision:",
+            t("water_precision"),
             (
-                f"%{float(metrics.get('water_precision', 0)) * 100.0:.3f}"
+                f"{float(metrics.get('water_precision', 0)) * 100.0:.3f}%"
             ),
         )
 
         st.write(
-            "Kara sızıntısı:",
+            t("land_leakage"),
             (
-                f"%{float(metrics.get('land_leakage', 0)) * 100.0:.4f}"
+                f"{float(metrics.get('land_leakage', 0)) * 100.0:.4f}%"
             ),
         )
 
     st.warning(
-        "Araştırma prototipidir. Uzman doğrulaması "
-        "olmadan operasyonel karar için kullanılmamalıdır."
+        t("research_warning")
     )
 
 
 uploaded_file = st.file_uploader(
-    "SAR görüntüsünü yükleyin",
+    t("upload_label"),
     type=[
         "png",
         "jpg",
@@ -1369,7 +1789,7 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file is None:
     st.info(
-        "Başlamak için bir SAR görüntüsü yükleyin."
+        t("upload_prompt")
     )
     st.stop()
 
@@ -1412,7 +1832,10 @@ try:
     )
 except Exception as error:
     st.error(
-        f"Görüntü okunamadı: {error}"
+        t(
+            "image_read_error",
+            error=error,
+        )
     )
     st.stop()
 
@@ -1429,18 +1852,20 @@ preview, info = st.columns(
 with preview:
     st.image(
         uploaded_image,
-        caption="Yüklenen gri-seviye SAR görüntüsü",
+        caption=t(
+            "uploaded_image_caption"
+        ),
         use_container_width=True,
     )
 
 with info:
     st.write(
-        "**Dosya:**",
+        t("file_label"),
         uploaded_file.name,
     )
 
     st.write(
-        "**Boyut:**",
+        t("dimensions_label"),
         (
             f"{uploaded_image.width} × "
             f"{uploaded_image.height}"
@@ -1448,14 +1873,12 @@ with info:
     )
 
     st.write(
-        "**Akış:**",
-        (
-            "Girdi doğrulama → kesin karayı dışla → seçilen eşikle petrol tara → aday doğrulama"
-        ),
+        t("workflow_label"),
+        t("workflow_text"),
     )
 
     analyse_button = st.button(
-        "Hassas taramayı başlat",
+        t("start_scan"),
         type="primary",
         use_container_width=True,
     )
@@ -1476,7 +1899,7 @@ if analyse_button:
 
     try:
         with st.spinner(
-            "Girdi alanı doğrulanıyor..."
+            t("spinner_input")
         ):
             input_gate = load_input_gate()
             input_result = run_input_gate(
@@ -1498,7 +1921,7 @@ if analyse_button:
             module = load_safe_module()
 
             with st.spinner(
-                "Kara-su güvenlik kapısı çalıştırılıyor..."
+                t("spinner_water")
             ):
                 water_gate = (
                     load_water_gate_cached()
@@ -1537,13 +1960,19 @@ if analyse_button:
             ] = analysis_water_mask
 
             with st.spinner(
-                "Hassas tarama modu: kesin kara dışındaki alanlar "
-                f"{segmentation_threshold:.2f} eşikle taranıyor..."
+                t(
+                    "spinner_oil",
+                    threshold=(
+                        segmentation_threshold
+                    ),
+                )
             ):
                 oil_pipeline = (
                     load_oil_pipeline_cached()
                 )
-                verifier_module = load_v08_module()
+                verifier_module = (
+                    load_v08_module()
+                )
                 oil_result = verifier_module[
                     "run_oil_pipeline_v07"
                 ](
@@ -1552,7 +1981,9 @@ if analyse_button:
                         analysis_water_mask
                     ),
                     pipeline=oil_pipeline,
-                    segmentation_threshold=float(segmentation_threshold),
+                    segmentation_threshold=float(
+                        segmentation_threshold
+                    ),
                     minimum_component_ratio=float(
                         minimum_component_ratio
                     ),
@@ -1561,20 +1992,21 @@ if analyse_button:
                     ),
                 )
 
-
-                screening_mask, screening_mode, screening_cutoff = (
-                    build_sensitive_screening_mask(
-                        image=model_image,
-                        probability=oil_result[
-                            "probability"
-                        ],
-                        analysis_mask=(
-                            analysis_water_mask
-                        ),
-                        absolute_mask=oil_result[
-                            "raw_mask"
-                        ],
-                    )
+                (
+                    screening_mask,
+                    screening_mode,
+                    screening_cutoff,
+                ) = build_sensitive_screening_mask(
+                    image=model_image,
+                    probability=oil_result[
+                        "probability"
+                    ],
+                    analysis_mask=(
+                        analysis_water_mask
+                    ),
+                    absolute_mask=oil_result[
+                        "raw_mask"
+                    ],
                 )
 
                 oil_result[
@@ -1632,7 +2064,7 @@ if input_result is None:
 
 st.divider()
 st.subheader(
-    "1. Giriş doğrulama"
+    t("section_input")
 )
 
 render_input_gate(
@@ -1652,15 +2084,14 @@ water_result = st.session_state.get(
 
 if water_result is None:
     st.error(
-        "Giriş kabul edildi fakat kara-su sonucu "
-        "oluşturulamadı."
+        t("water_result_missing")
     )
     st.stop()
 
 
 st.divider()
 st.subheader(
-    "2. Kara-su güvenliği"
+    t("section_water")
 )
 
 render_water_gate(
@@ -1672,14 +2103,7 @@ if not water_result[
     "pipeline_allowed"
 ]:
     st.markdown(
-        """
-        <div class="scientific-note">
-        <b>Hassas tarama modu:</b> Su kapısı belirsiz olsa da
-        petrol analizi çalıştırıldı. Kesin kara dışındaki güvenli
-        ve belirsiz alanlar tarandı. Bu yaklaşım kaçırmayı azaltmayı
-        hedefler fakat yanlış alarmı artırabilir.
-        </div>
-        """,
+        t("sensitive_mode_note"),
         unsafe_allow_html=True,
     )
 
@@ -1687,21 +2111,17 @@ if not water_result[
 oil_result = st.session_state.get(
     "oil_result"
 )
-oil_result = st.session_state.get(
-    "oil_result"
-)
 
 if oil_result is None:
     st.error(
-        "Su kapısı geçti fakat petrol sonucu "
-        "oluşturulamadı."
+        t("oil_result_missing")
     )
     st.stop()
 
 
 st.divider()
 st.subheader(
-    "3. Final hassas petrol taraması ve aday doğrulama"
+    t("section_oil")
 )
 
 render_oil_result(
@@ -1710,20 +2130,6 @@ render_oil_result(
 
 
 st.markdown(
-    """
-    <div class="scientific-note">
-    <b>Bilimsel not:</b>
-    Final hassas tarama kesin kara dışındaki güvenli ve
-    belirsiz alanları seçilen eşikle inceler. Mutlak U-Net
-    maskesi boş kalırsa göreli model yanıtı ve yerel koyuluk
-    yalnız şüpheli-bölge taraması için kullanılır. Ham tarama maskesi
-    şüpheli bölgeleri görünür tutar ve yanlış pozitif içerebilir.
-    Yalnız CONFIRMED_OIL kararı alan bölgeler onaylı maskeye
-    eklenir. Her iki çıktı da uzman incelemesi gerektirir.
-    </div>
-    """,
+    t("scientific_note"),
     unsafe_allow_html=True,
 )
-
-
-

@@ -1,7 +1,0 @@
-torch==2.13.0+cu126
-torchvision==0.28.0+cu126
-numpy==2.5.1
-pandas==3.0.5
-Pillow==12.3.0
-matplotlib==3.11.1
-streamlit==1.60.0
