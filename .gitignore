@@ -69,3 +69,5 @@ data/annotation/
 data/annotations/
 data/derived/
 data/mined/
+
+*.lnk

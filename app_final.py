@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import hashlib
 import io
@@ -420,6 +420,94 @@ def build_sensitive_screening_mask(
         "RELATIVE_TOP_0_5_PERCENT",
         relative_cutoff,
     )
+
+
+def prepare_image_for_models(
+    image: Image.Image,
+    multiple: int = 32,
+    maximum_side: int = 1024,
+) -> Image.Image:
+    '''
+    B?y?k g?r?nt?y? en-boy oran?n? koruyarak k???lt?r.
+    Ard?ndan sa? ve alt kenar? 32 kat?na tamamlar.
+    '''
+    grayscale = image.convert("L")
+
+    width, height = grayscale.size
+    longest_side = max(
+        width,
+        height,
+    )
+
+    if longest_side > maximum_side:
+        scale = (
+            maximum_side
+            / float(longest_side)
+        )
+
+        resized_width = max(
+            32,
+            int(round(width * scale)),
+        )
+
+        resized_height = max(
+            32,
+            int(round(height * scale)),
+        )
+
+        grayscale = grayscale.resize(
+            (
+                resized_width,
+                resized_height,
+            ),
+            Image.Resampling.BILINEAR,
+        )
+
+    image_array = np.asarray(
+        grayscale,
+        dtype=np.uint8,
+    )
+
+    height, width = image_array.shape
+
+    target_height = (
+        (height + multiple - 1)
+        // multiple
+        * multiple
+    )
+
+    target_width = (
+        (width + multiple - 1)
+        // multiple
+        * multiple
+    )
+
+    pad_bottom = (
+        target_height - height
+    )
+
+    pad_right = (
+        target_width - width
+    )
+
+    if (
+        pad_bottom > 0
+        or pad_right > 0
+    ):
+        image_array = np.pad(
+            image_array,
+            (
+                (0, pad_bottom),
+                (0, pad_right),
+            ),
+            mode="edge",
+        )
+
+    return Image.fromarray(
+        image_array,
+        mode="L",
+    )
+
 
 def select_device() -> torch.device:
     return torch.device(
@@ -1329,6 +1417,11 @@ except Exception as error:
     st.stop()
 
 
+model_image = prepare_image_for_models(
+    uploaded_image
+)
+
+
 preview, info = st.columns(
     [2, 1]
 )
@@ -1414,7 +1507,7 @@ if analyse_button:
                 water_result = module[
                     "run_water_gate"
                 ](
-                    uploaded_image,
+                    model_image,
                     water_gate,
                 )
 
@@ -1454,7 +1547,7 @@ if analyse_button:
                 oil_result = verifier_module[
                     "run_oil_pipeline_v07"
                 ](
-                    image=uploaded_image,
+                    image=model_image,
                     safe_water_mask=(
                         analysis_water_mask
                     ),
@@ -1471,7 +1564,7 @@ if analyse_button:
 
                 screening_mask, screening_mode, screening_cutoff = (
                     build_sensitive_screening_mask(
-                        image=uploaded_image,
+                        image=model_image,
                         probability=oil_result[
                             "probability"
                         ],
